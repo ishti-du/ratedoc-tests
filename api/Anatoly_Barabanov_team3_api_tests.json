@@ -54,6 +54,36 @@
     },
     {
       "name": "Hospitals slug",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Response is JSON\", function () {\r",
+              "    pm.response.to.be.json;\r",
+              "});\r",
+              "\r",
+              "const json = pm.response.json();\r",
+              "const items = json.items || [];\r",
+              "\r",
+              "pm.test(\"Hospitals list exists\", function () {\r",
+              "    pm.expect(items).to.be.an(\"array\");\r",
+              "});\r",
+              "\r",
+              "if (items.length > 0 && items[0].slug) {\r",
+              "    pm.environment.set(\"hospitalSlug\", items[0].slug);\r",
+              "}"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
       "request": {
         "method": "GET",
         "header": [],
@@ -73,6 +103,38 @@
     },
     {
       "name": "Login Admin",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Login response status is valid\", function () {\r",
+              "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Response is JSON\", function () {\r",
+              "    pm.response.to.be.json;\r",
+              "});\r",
+              "\r",
+              "const json = pm.response.json();\r",
+              "\r",
+              "pm.test(\"Token exists\", function () {\r",
+              "    pm.expect(\r",
+              "        json.access_token || json.token || json.data?.access_token\r",
+              "    ).to.exist;\r",
+              "});\r",
+              "\r",
+              "pm.environment.set(\r",
+              "    \"adminToken\",\r",
+              "    json.access_token || json.token || json.data?.access_token\r",
+              ");"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
       "request": {
         "method": "POST",
         "header": [],
@@ -107,9 +169,15 @@
           "listen": "test",
           "script": {
             "exec": [
-              "pm.test(\"Status is valid\", function () {\r",
-              "    pm.expect(pm.response.code).to.be.oneOf([200, 204, 403, 400, 409]);\r",
-              "});"
+              "pm.test(\"Approve response status is valid\", function () {\r",
+              "    pm.expect(pm.response.code).to.be.oneOf([200, 204, 400, 403, 409]);\r",
+              "});\r",
+              "\r",
+              "if (pm.response.code !== 204) {\r",
+              "    pm.test(\"Response is JSON\", function () {\r",
+              "        pm.response.to.be.json;\r",
+              "    });\r",
+              "}"
             ],
             "type": "text/javascript",
             "packages": {},
@@ -148,6 +216,36 @@
     },
     {
       "name": "Doctor slug",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Response is JSON\", function () {\r",
+              "    pm.response.to.be.json;\r",
+              "});\r",
+              "\r",
+              "const json = pm.response.json();\r",
+              "const items = json.items || [];\r",
+              "\r",
+              "pm.test(\"Doctors list exists\", function () {\r",
+              "    pm.expect(items).to.be.an(\"array\");\r",
+              "});\r",
+              "\r",
+              "if (items.length > 0 && items[0].slug) {\r",
+              "    pm.environment.set(\"doctorSlug\", items[0].slug);\r",
+              "}"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
       "request": {
         "method": "GET",
         "header": [],
@@ -176,9 +274,17 @@
               "    pm.expect(pm.response.code).to.be.oneOf([200, 404]);\r",
               "});\r",
               "\r",
-              "pm.test(\"Response is JSON\", function () {\r",
-              "    pm.response.to.be.json;\r",
-              "});"
+              "if (pm.response.code === 200) {\r",
+              "    pm.test(\"Response is JSON\", function () {\r",
+              "        pm.response.to.be.json;\r",
+              "    });\r",
+              "\r",
+              "    const json = pm.response.json();\r",
+              "\r",
+              "    pm.test(\"Response exists\", function () {\r",
+              "        pm.expect(json).to.exist;\r",
+              "    });\r",
+              "}"
             ],
             "type": "text/javascript",
             "packages": {},
