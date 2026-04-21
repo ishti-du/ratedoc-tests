@@ -1,4 +1,0 @@
-pytest-playwright
-playwright
-pytest-base-url
-pytest-html
