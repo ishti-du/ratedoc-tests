@@ -1,0 +1,393 @@
+{
+  "info": {
+    "_postman_id": "f1e2d3c4-b5a6-7890-cdef-012345678901",
+    "name": "Gabriel_Silva_RateDoc_Admin",
+    "description": "Team 1 admin API tests for RateDoc (http://159.89.231.16:3001).\nRun order: Setup folder first (Login → seed data), then the test folders.\nEach test is self-contained – setup creates data, teardown deletes it.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "gabriel_silva"
+  },
+  "item": [
+    {
+      "name": "Setup",
+      "description": "Must run first. Authenticates and seeds the env variables used by every test request.",
+      "item": [
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Save the access token so all subsequent requests can use {{auth_token}}",
+                  "pm.test('Login succeeds (200)', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "pm.test('Response contains access_token', function () {",
+                  "    pm.expect(json).to.have.property('access_token');",
+                  "});",
+                  "",
+                  "if (json.access_token) {",
+                  "    pm.environment.set('auth_token', json.access_token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"tests1234@gmail.com\",\n  \"password\": \"abc123456\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "login"]
+            },
+            "description": "Authenticates the test user and stores auth_token in the environment."
+          },
+          "response": []
+        },
+        {
+          "name": "Get a Provider ID (setup)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Pick the first provider returned and save its id for the Reject test.",
+                  "// If the account has no admin access this will return 403 – admin credentials needed.",
+                  "const json = pm.response.json();",
+                  "const providers = Array.isArray(json) ? json : (json.data || json.providers || json.results || []);",
+                  "",
+                  "if (providers.length > 0) {",
+                  "    // Prefer a provider with status 'pending'; fall back to the first one",
+                  "    const pending = providers.find(p => (p.status || p.state || '').toLowerCase() === 'pending');",
+                  "    const target  = pending || providers[0];",
+                  "    pm.environment.set('provider_id', target.id);",
+                  "    console.log('provider_id set to:', target.id);",
+                  "} else {",
+                  "    console.warn('No providers found – Reject Provider test will fail.');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{auth_token}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/providers",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "providers"]
+            },
+            "description": "Fetches the provider list and saves the first pending provider id."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Test Review (setup)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Create a disposable review and save its id.",
+                  "// This review is used by the Mark Pending and Delete tests.",
+                  "const json = pm.response.json();",
+                  "",
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    pm.environment.set('review_id', json.id);",
+                  "    console.log('review_id set to:', json.id);",
+                  "} else {",
+                  "    console.warn('Could not create test review. Status:', pm.response.code, JSON.stringify(json));",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{auth_token}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"provider_id\": \"{{provider_id}}\",\n  \"rating\": 3,\n  \"comment\": \"[Test] Automated review – created and deleted by the test suite.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/reviews",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "reviews"]
+            },
+            "description": "Creates a temporary review so downstream tests have a real review_id."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Admin – Providers",
+      "item": [
+        {
+          "name": "Reject Provider",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// PUT /api/v1/admin/providers/{id}/reject",
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response contains provider id', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('id');",
+                  "});",
+                  "",
+                  "pm.test('Provider status is rejected', function () {",
+                  "    const json = pm.response.json();",
+                  "    const status = (json.status || json.state || '').toLowerCase();",
+                  "    pm.expect(status).to.equal('rejected');",
+                  "});",
+                  "",
+                  "pm.test('Response time is under 2000ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{auth_token}}", "type": "string" }]
+            },
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Provider information could not be verified.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/providers/{{provider_id}}/reject",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "providers", "{{provider_id}}", "reject"]
+            },
+            "description": "Rejects a pending provider. Requires admin role."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Admin – Reviews",
+      "item": [
+        {
+          "name": "Get All Reviews",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// GET /api/v1/admin/reviews",
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response body is an array', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.be.an('array');",
+                  "});",
+                  "",
+                  "pm.test('Each review has id and status fields', function () {",
+                  "    const reviews = pm.response.json();",
+                  "    if (reviews.length > 0) {",
+                  "        pm.expect(reviews[0]).to.have.property('id');",
+                  "        pm.expect(reviews[0]).to.have.property('status');",
+                  "    }",
+                  "});",
+                  "",
+                  "pm.test('Response time is under 2000ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{auth_token}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/reviews",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "reviews"]
+            },
+            "description": "Returns all reviews regardless of status. Admin-only."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Pending Reviews",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// GET /api/v1/admin/reviews/pending",
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response body is an array', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.be.an('array');",
+                  "});",
+                  "",
+                  "pm.test('All returned reviews have pending status', function () {",
+                  "    const reviews = pm.response.json();",
+                  "    reviews.forEach(function (review) {",
+                  "        const status = (review.status || review.state || '').toLowerCase();",
+                  "        pm.expect(status).to.equal('pending');",
+                  "    });",
+                  "});",
+                  "",
+                  "pm.test('Response time is under 2000ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{auth_token}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/reviews/pending",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "reviews", "pending"]
+            },
+            "description": "Returns only reviews with pending moderation status. Admin-only."
+          },
+          "response": []
+        },
+        {
+          "name": "Mark Review Pending",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// PUT /api/v1/admin/reviews/{id}/pending",
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Review status is now pending', function () {",
+                  "    const json = pm.response.json();",
+                  "    const status = (json.status || json.state || '').toLowerCase();",
+                  "    pm.expect(status).to.equal('pending');",
+                  "});",
+                  "",
+                  "pm.test('Response time is under 2000ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{auth_token}}", "type": "string" }]
+            },
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/reviews/{{review_id}}/pending",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "reviews", "{{review_id}}", "pending"]
+            },
+            "description": "Moves a review back to pending moderation state. Admin-only.\nreview_id is populated by the Setup / Create Test Review request."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Review",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// DELETE /api/v1/admin/reviews/{id}",
+                  "pm.test('Status code is 200 or 204', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+                  "});",
+                  "",
+                  "pm.test('Response time is under 2000ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "});",
+                  "",
+                  "// Clear review_id so it is not reused after deletion",
+                  "pm.environment.unset('review_id');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{auth_token}}", "type": "string" }]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/reviews/{{review_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "reviews", "{{review_id}}"]
+            },
+            "description": "Permanently deletes a review. Admin-only.\nreview_id is populated by Setup / Create Test Review and cleared after deletion."
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://159.89.231.16:3001",
+      "type": "default"
+    }
+  ]
+}
