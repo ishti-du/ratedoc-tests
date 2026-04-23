@@ -1,0 +1,45 @@
+{
+	"id": "d042ae91-46f4-4e59-836b-8882314bddbe",
+	"values": [
+		{
+			"key": "email",
+			"value": "",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "pass",
+			"value": "",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "access_token",
+			"value": "",
+			"type": "any",
+			"enabled": true
+		},
+		{
+			"key": "admin",
+			"value": "admin@ratedoc.com",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "admin_pass",
+			"value": "DeyaJabeNa!023",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "new_center_slug",
+			"value": "string1221-25136113",
+			"type": "any",
+			"enabled": true
+		}
+	],
+	"name": "RateDoctor Globals",
+	"_postman_variable_scope": "globals",
+	"_postman_exported_at": "2026-04-14T19:29:28.330Z",
+	"_postman_exported_using": "Postman/12.6.2-260414-1331"
+}
