@@ -2,14 +2,14 @@
   "info": {
     "_postman_id": "f1e2d3c4-b5a6-7890-cdef-012345678901",
     "name": "Gabriel_Silva_RateDoc_Admin",
-    "description": "Team 1 admin API tests for RateDoc (http://159.89.231.16:3001).\nRun order: Setup folder first (Login → seed data), then the test folders.\nEach test is self-contained – setup creates data, teardown deletes it.",
+    "description": "Team 1 admin API tests for RateDoc (http://159.89.231.16:3001).\nEndpoints covered:\n  PUT /api/v1/admin/reviews/{id}/approve\n  PUT /api/v1/admin/reviews/{id}/reject\n  GET /api/v1/admin/users\n  POST /api/v1/admin/users\n  PUT /api/v1/admin/users/{id}/role\n\nRun order: Setup folder first, then Admin – Reviews, then Admin – Users.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "_exporter_id": "gabriel_silva"
   },
   "item": [
     {
       "name": "Setup",
-      "description": "Must run first. Authenticates and seeds the env variables used by every test request.",
+      "description": "Must run first. Logs in as admin and seeds env variables used by every test.",
       "item": [
         {
           "name": "Login",
@@ -18,7 +18,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "// Save the access token so all subsequent requests can use {{auth_token}}",
+                  "// Authenticate as admin and save token for all downstream requests",
                   "pm.test('Login succeeds (200)', function () {",
                   "    pm.response.to.have.status(200);",
                   "});",
@@ -41,37 +41,34 @@
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"tests1234@gmail.com\",\n  \"password\": \"abc123456\"\n}"
+              "raw": "{\n  \"email\": \"admin@ratedoc.com\",\n  \"password\": \"DeyaJabeNa!023\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/v1/auth/login",
               "host": ["{{base_url}}"],
               "path": ["api", "v1", "auth", "login"]
             },
-            "description": "Authenticates the test user and stores auth_token in the environment."
+            "description": "Authenticates as admin and stores auth_token in the environment."
           },
           "response": []
         },
         {
-          "name": "Get a Provider ID (setup)",
+          "name": "Get Review ID for Tests (setup)",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "// Pick the first provider returned and save its id for the Reject test.",
-                  "// If the account has no admin access this will return 403 – admin credentials needed.",
-                  "const json = pm.response.json();",
-                  "const providers = Array.isArray(json) ? json : (json.data || json.providers || json.results || []);",
+                  "// Pull the first review from the admin list and save its id.",
+                  "// This review is used by the Approve and Reject tests.",
+                  "const json  = pm.response.json();",
+                  "const items = json.items || [];",
                   "",
-                  "if (providers.length > 0) {",
-                  "    // Prefer a provider with status 'pending'; fall back to the first one",
-                  "    const pending = providers.find(p => (p.status || p.state || '').toLowerCase() === 'pending');",
-                  "    const target  = pending || providers[0];",
-                  "    pm.environment.set('provider_id', target.id);",
-                  "    console.log('provider_id set to:', target.id);",
+                  "if (items.length > 0) {",
+                  "    pm.environment.set('review_id', String(items[0].id));",
+                  "    console.log('review_id set to:', items[0].id, '| current status:', items[0].status);",
                   "} else {",
-                  "    console.warn('No providers found – Reject Provider test will fail.');",
+                  "    console.warn('No reviews found – Approve/Reject tests will fail.');",
                   "}"
                 ],
                 "type": "text/javascript"
@@ -86,82 +83,43 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/api/v1/admin/providers",
+              "raw": "{{base_url}}/api/v1/admin/reviews",
               "host": ["{{base_url}}"],
-              "path": ["api", "v1", "admin", "providers"]
+              "path": ["api", "v1", "admin", "reviews"]
             },
-            "description": "Fetches the provider list and saves the first pending provider id."
-          },
-          "response": []
-        },
-        {
-          "name": "Create Test Review (setup)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "// Create a disposable review and save its id.",
-                  "// This review is used by the Mark Pending and Delete tests.",
-                  "const json = pm.response.json();",
-                  "",
-                  "if (pm.response.code === 200 || pm.response.code === 201) {",
-                  "    pm.environment.set('review_id', json.id);",
-                  "    console.log('review_id set to:', json.id);",
-                  "} else {",
-                  "    console.warn('Could not create test review. Status:', pm.response.code, JSON.stringify(json));",
-                  "}"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [{ "key": "token", "value": "{{auth_token}}", "type": "string" }]
-            },
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"provider_id\": \"{{provider_id}}\",\n  \"rating\": 3,\n  \"comment\": \"[Test] Automated review – created and deleted by the test suite.\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/v1/reviews",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "reviews"]
-            },
-            "description": "Creates a temporary review so downstream tests have a real review_id."
+            "description": "Fetches the reviews list and saves the first review id for Approve and Reject tests."
           },
           "response": []
         }
       ]
     },
     {
-      "name": "Admin – Providers",
+      "name": "Admin – Reviews",
       "item": [
         {
-          "name": "Reject Provider",
+          "name": "Approve Review",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "// PUT /api/v1/admin/providers/{id}/reject",
+                  "// PUT /api/v1/admin/reviews/{id}/approve",
+                  "console.log('Approve Review response:', JSON.stringify(pm.response.json()));",
+                  "",
                   "pm.test('Status code is 200', function () {",
                   "    pm.response.to.have.status(200);",
                   "});",
                   "",
-                  "pm.test('Response contains provider id', function () {",
+                  "pm.test('Response contains review id', function () {",
                   "    const json = pm.response.json();",
                   "    pm.expect(json).to.have.property('id');",
                   "});",
                   "",
-                  "pm.test('Provider status is rejected', function () {",
+                  "pm.test('Response confirms review was approved', function () {",
                   "    const json = pm.response.json();",
-                  "    const status = (json.status || json.state || '').toLowerCase();",
-                  "    pm.expect(status).to.equal('rejected');",
+                  "    // API returns { message, id } not a status field",
+                  "    const msg = (json.message || '').toLowerCase();",
+                  "    pm.expect(msg).to.include('approved');",
                   "});",
                   "",
                   "pm.test('Response time is under 2000ms', function () {",
@@ -178,47 +136,97 @@
               "bearer": [{ "key": "token", "value": "{{auth_token}}", "type": "string" }]
             },
             "method": "PUT",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"reason\": \"Provider information could not be verified.\"\n}"
-            },
+            "header": [],
             "url": {
-              "raw": "{{base_url}}/api/v1/admin/providers/{{provider_id}}/reject",
+              "raw": "{{base_url}}/api/v1/admin/reviews/{{review_id}}/approve",
               "host": ["{{base_url}}"],
-              "path": ["api", "v1", "admin", "providers", "{{provider_id}}", "reject"]
+              "path": ["api", "v1", "admin", "reviews", "{{review_id}}", "approve"]
             },
-            "description": "Rejects a pending provider. Requires admin role."
+            "description": "Approves a review. Admin-only. review_id set by Setup."
+          },
+          "response": []
+        },
+        {
+          "name": "Reject Review",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// PUT /api/v1/admin/reviews/{id}/reject",
+                  "// Runs after Approve, so the review is currently 'approved'.",
+                  "console.log('Reject Review response:', JSON.stringify(pm.response.json()));",
+                  "",
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response contains review id', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('id');",
+                  "});",
+                  "",
+                  "pm.test('Response confirms review was rejected', function () {",
+                  "    const json = pm.response.json();",
+                  "    // API returns { message, id } not a status field",
+                  "    const msg = (json.message || '').toLowerCase();",
+                  "    pm.expect(msg).to.include('rejected');",
+                  "});",
+                  "",
+                  "pm.test('Response time is under 2000ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{auth_token}}", "type": "string" }]
+            },
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/reviews/{{review_id}}/reject",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "reviews", "{{review_id}}", "reject"]
+            },
+            "description": "Rejects a review. Admin-only. Uses the same review_id as Approve Review."
           },
           "response": []
         }
       ]
     },
     {
-      "name": "Admin – Reviews",
+      "name": "Admin – Users",
       "item": [
         {
-          "name": "Get All Reviews",
+          "name": "Get Users",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "// GET /api/v1/admin/reviews",
+                  "// GET /api/v1/admin/users",
                   "pm.test('Status code is 200', function () {",
                   "    pm.response.to.have.status(200);",
                   "});",
                   "",
-                  "pm.test('Response body is an array', function () {",
+                  "pm.test('Response is an array or paginated object', function () {",
                   "    const json = pm.response.json();",
-                  "    pm.expect(json).to.be.an('array');",
+                  "    const isArray = Array.isArray(json);",
+                  "    const isPaginated = json && Array.isArray(json.items);",
+                  "    pm.expect(isArray || isPaginated).to.be.true;",
                   "});",
                   "",
-                  "pm.test('Each review has id and status fields', function () {",
-                  "    const reviews = pm.response.json();",
-                  "    if (reviews.length > 0) {",
-                  "        pm.expect(reviews[0]).to.have.property('id');",
-                  "        pm.expect(reviews[0]).to.have.property('status');",
+                  "pm.test('Each user has id and email fields', function () {",
+                  "    const json  = pm.response.json();",
+                  "    const users = Array.isArray(json) ? json : (json.items || []);",
+                  "    if (users.length > 0) {",
+                  "        pm.expect(users[0]).to.have.property('id');",
+                  "        pm.expect(users[0]).to.have.property('email');",
                   "    }",
                   "});",
                   "",
@@ -238,42 +246,56 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/api/v1/admin/reviews",
+              "raw": "{{base_url}}/api/v1/admin/users",
               "host": ["{{base_url}}"],
-              "path": ["api", "v1", "admin", "reviews"]
+              "path": ["api", "v1", "admin", "users"]
             },
-            "description": "Returns all reviews regardless of status. Admin-only."
+            "description": "Returns all users. Admin-only."
           },
           "response": []
         },
         {
-          "name": "Get Pending Reviews",
+          "name": "Create User",
           "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Generate a unique email using a timestamp so re-runs never hit 409 Conflict",
+                  "const timestamp = Date.now();",
+                  "pm.environment.set('test_user_email', 'testuser_auto_' + timestamp + '@ratedoc.com');"
+                ],
+                "type": "text/javascript"
+              }
+            },
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "// GET /api/v1/admin/reviews/pending",
-                  "pm.test('Status code is 200', function () {",
-                  "    pm.response.to.have.status(200);",
+                  "// POST /api/v1/admin/users",
+                  "// Saves the new user's id for the Update User Role test.",
+                  "console.log('Create User response:', JSON.stringify(pm.response.json()));",
+                  "",
+                  "pm.test('Status code is 200 or 201', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
                   "});",
                   "",
-                  "pm.test('Response body is an array', function () {",
+                  "pm.test('Response contains user id and email', function () {",
                   "    const json = pm.response.json();",
-                  "    pm.expect(json).to.be.an('array');",
-                  "});",
-                  "",
-                  "pm.test('All returned reviews have pending status', function () {",
-                  "    const reviews = pm.response.json();",
-                  "    reviews.forEach(function (review) {",
-                  "        const status = (review.status || review.state || '').toLowerCase();",
-                  "        pm.expect(status).to.equal('pending');",
-                  "    });",
+                  "    pm.expect(json).to.have.property('id');",
+                  "    pm.expect(json).to.have.property('email');",
                   "});",
                   "",
                   "pm.test('Response time is under 2000ms', function () {",
                   "    pm.expect(pm.response.responseTime).to.be.below(2000);",
-                  "});"
+                  "});",
+                  "",
+                  "// Save new user id so Update User Role can reference it",
+                  "const json = pm.response.json();",
+                  "if (json && json.id) {",
+                  "    pm.environment.set('test_user_id', String(json.id));",
+                  "    console.log('test_user_id set to:', json.id);",
+                  "}"
                 ],
                 "type": "text/javascript"
               }
@@ -284,38 +306,46 @@
               "type": "bearer",
               "bearer": [{ "key": "token", "value": "{{auth_token}}", "type": "string" }]
             },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/v1/admin/reviews/pending",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "admin", "reviews", "pending"]
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{test_user_email}}\",\n  \"password\": \"TestPass123!\",\n  \"name\": \"Auto Test User\"\n}"
             },
-            "description": "Returns only reviews with pending moderation status. Admin-only."
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/users",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "users"]
+            },
+            "description": "Creates a new user via the admin endpoint. Saves the user id for Update User Role."
           },
           "response": []
         },
         {
-          "name": "Mark Review Pending",
+          "name": "Update User Role",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "// PUT /api/v1/admin/reviews/{id}/pending",
+                  "// PUT /api/v1/admin/users/{id}/role",
+                  "console.log('Update Role response:', JSON.stringify(pm.response.json()));",
+                  "",
                   "pm.test('Status code is 200', function () {",
                   "    pm.response.to.have.status(200);",
                   "});",
                   "",
-                  "pm.test('Review status is now pending', function () {",
+                  "pm.test('Response contains user id', function () {",
                   "    const json = pm.response.json();",
-                  "    const status = (json.status || json.state || '').toLowerCase();",
-                  "    pm.expect(status).to.equal('pending');",
+                  "    pm.expect(json).to.have.property('id');",
                   "});",
                   "",
                   "pm.test('Response time is under 2000ms', function () {",
                   "    pm.expect(pm.response.responseTime).to.be.below(2000);",
-                  "});"
+                  "});",
+                  "",
+                  "// Clean up: clear test_user_id after the role update",
+                  "pm.environment.unset('test_user_id');"
                 ],
                 "type": "text/javascript"
               }
@@ -330,53 +360,14 @@
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{}"
+              "raw": "{\n  \"role\": \"user\"\n}"
             },
             "url": {
-              "raw": "{{base_url}}/api/v1/admin/reviews/{{review_id}}/pending",
+              "raw": "{{base_url}}/api/v1/admin/users/{{test_user_id}}/role",
               "host": ["{{base_url}}"],
-              "path": ["api", "v1", "admin", "reviews", "{{review_id}}", "pending"]
+              "path": ["api", "v1", "admin", "users", "{{test_user_id}}", "role"]
             },
-            "description": "Moves a review back to pending moderation state. Admin-only.\nreview_id is populated by the Setup / Create Test Review request."
-          },
-          "response": []
-        },
-        {
-          "name": "Delete Review",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "// DELETE /api/v1/admin/reviews/{id}",
-                  "pm.test('Status code is 200 or 204', function () {",
-                  "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
-                  "});",
-                  "",
-                  "pm.test('Response time is under 2000ms', function () {",
-                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
-                  "});",
-                  "",
-                  "// Clear review_id so it is not reused after deletion",
-                  "pm.environment.unset('review_id');"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [{ "key": "token", "value": "{{auth_token}}", "type": "string" }]
-            },
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/v1/admin/reviews/{{review_id}}",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "admin", "reviews", "{{review_id}}"]
-            },
-            "description": "Permanently deletes a review. Admin-only.\nreview_id is populated by Setup / Create Test Review and cleared after deletion."
+            "description": "Updates the role of the user created by Create User. Admin-only."
           },
           "response": []
         }
