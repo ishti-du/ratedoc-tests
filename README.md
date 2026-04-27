@@ -43,5 +43,5 @@ For Swagger UI for API documents, visit: http://159.89.231.16:3001/docs
 ### Execution
 Run:
 ```bash
-newman run Ian_Grinarml_RateDoc_Cities.postman_collection.json -e Ian_Grinarml_Staging.postman_environment.json
+newman run /workspaces/ratedoc-tests/api/collections/Ian_Grinarml_RateDoc_Cities.postman_collection.json -e /workspaces/ratedoc-tests/api/environments/Ian_Grinarml_Staging.postman_environment.json
 ```

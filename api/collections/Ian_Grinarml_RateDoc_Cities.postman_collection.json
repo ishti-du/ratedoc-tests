@@ -12,8 +12,8 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "{{baseUrl}}/api/v1/countries",
-          "host": ["{{baseUrl}}"],
+          "raw": "{{base_url}}/api/v1/countries",
+          "host": ["{{base_url}}"],
           "path": ["api", "v1", "countries"]
         }
       },
@@ -47,8 +47,8 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "{{baseUrl}}/api/v1/cities",
-          "host": ["{{baseUrl}}"],
+          "raw": "{{base_url}}/api/v1/cities",
+          "host": ["{{base_url}}"],
           "path": ["api", "v1", "cities"]
         }
       },
@@ -82,8 +82,8 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "{{baseUrl}}/api/v1/cities/{{cityId}}",
-          "host": ["{{baseUrl}}"],
+          "raw": "{{base_url}}/api/v1/cities/{{cityId}}",
+          "host": ["{{base_url}}"],
           "path": ["api", "v1", "cities", "{{cityId}}"]
         }
       },
@@ -118,8 +118,8 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "{{baseUrl}}/api/v1/cities/999999999",
-          "host": ["{{baseUrl}}"],
+          "raw": "{{base_url}}/api/v1/cities/999999999",
+          "host": ["{{base_url}}"],
           "path": ["api", "v1", "cities", "999999999"]
         }
       },

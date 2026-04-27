@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "newman run collections/Ian_Grinarml_RateDoc_Cities.postman_collection.json -e environments/Ian_Grinarml_Staging.postman_environment.json",
-    "test:cli": "newman run"
+    "test:cli": "newman run collections/Ian_Grinarml_RateDoc_Cities.postman_collection.json -e environments/Ian_Grinarml_Staging.postman_environment.json"
   },
   "devDependencies": {
     "newman": "^6.0.0"
