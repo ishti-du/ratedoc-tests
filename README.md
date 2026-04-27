@@ -22,10 +22,14 @@ For Swagger UI for API documents, visit: http://159.89.231.16:3001/docs
    playwright install
    ```
 ### Execution
-Run tests using pytest:
-```bash
-pytest tests/ --base-url http://159.89.231.16:3000/
-```
+1. Activate the virtual environment (if not already activated):
+   ```bash
+   source venv/bin/activate
+   ```
+2. Run tests using pytest:
+   ```bash
+   pytest tests/ --base-url http://159.89.231.16:3000/
+   ```
 
 ## API Testing (Newman CLI)
 ### Setup
