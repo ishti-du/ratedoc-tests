@@ -1,0 +1,303 @@
+{
+  "info": {
+    "_postman_id": "58f42134-7b24-46ee-b75e-facilities-crud",
+    "name": "Sam Shtrambrand - Facilities API",
+    "description": "Newman/Postman tests for RateDoc Facilities CRUD endpoints.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "List Facilities",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/v1/facilities",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "facilities"
+          ]
+        },
+        "description": "GET /api/v1/facilities"
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('List Facilities returns 200', function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('List Facilities returns an array of facilities', function () {",
+              "  const facilities = pm.response.json();",
+              "  pm.expect(facilities).to.be.an('array');",
+              "  facilities.forEach((facility) => {",
+              "    pm.expect(facility).to.have.property('id').that.is.a('number');",
+              "    pm.expect(facility).to.have.property('name').that.is.a('string');",
+              "  });",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Create Facility",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const timestamp = Date.now();",
+              "pm.collectionVariables.set('facility_name', `Sam Newman Facility ${timestamp}`);",
+              "pm.collectionVariables.set('facility_description', `Created by Newman CRUD test ${timestamp}`);"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Create Facility returns 201', function () {",
+              "  pm.response.to.have.status(201);",
+              "});",
+              "",
+              "pm.test('Create Facility returns created facility and saves facility_id', function () {",
+              "  const facility = pm.response.json();",
+              "  pm.expect(facility).to.have.property('id').that.is.a('number');",
+              "  pm.expect(facility.name).to.eql(pm.collectionVariables.get('facility_name'));",
+              "  pm.expect(facility.description).to.eql(pm.collectionVariables.get('facility_description'));",
+              "  pm.collectionVariables.set('facility_id', String(facility.id));",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"{{facility_name}}\",\n  \"description\": \"{{facility_description}}\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/facilities",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "facilities"
+          ]
+        },
+        "description": "POST /api/v1/facilities"
+      },
+      "response": []
+    },
+    {
+      "name": "Get Facility",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/v1/facilities/{{facility_id}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "facilities",
+            "{{facility_id}}"
+          ]
+        },
+        "description": "GET /api/v1/facilities/{facility_id}"
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Get Facility returns 200', function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Get Facility returns the created facility', function () {",
+              "  const facility = pm.response.json();",
+              "  pm.expect(String(facility.id)).to.eql(pm.collectionVariables.get('facility_id'));",
+              "  pm.expect(facility.name).to.eql(pm.collectionVariables.get('facility_name'));",
+              "  pm.expect(facility.description).to.eql(pm.collectionVariables.get('facility_description'));",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Update Facility",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const timestamp = Date.now();",
+              "pm.collectionVariables.set('updated_facility_name', `Sam Updated Facility ${timestamp}`);",
+              "pm.collectionVariables.set('updated_facility_description', `Updated by Newman CRUD test ${timestamp}`);"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Update Facility returns 200', function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Update Facility returns updated fields', function () {",
+              "  const facility = pm.response.json();",
+              "  pm.expect(String(facility.id)).to.eql(pm.collectionVariables.get('facility_id'));",
+              "  pm.expect(facility.name).to.eql(pm.collectionVariables.get('updated_facility_name'));",
+              "  pm.expect(facility.description).to.eql(pm.collectionVariables.get('updated_facility_description'));",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"{{updated_facility_name}}\",\n  \"description\": \"{{updated_facility_description}}\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/facilities/{{facility_id}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "facilities",
+            "{{facility_id}}"
+          ]
+        },
+        "description": "PUT /api/v1/facilities/{facility_id}"
+      },
+      "response": []
+    },
+    {
+      "name": "Delete Facility",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/v1/facilities/{{facility_id}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "facilities",
+            "{{facility_id}}"
+          ]
+        },
+        "description": "DELETE /api/v1/facilities/{facility_id}"
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Delete Facility returns 200', function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Delete Facility returns a success message', function () {",
+              "  const body = pm.response.json();",
+              "  pm.expect(body).to.have.property('message').that.is.a('string');",
+              "  pm.expect(body.message.toLowerCase()).to.include('deleted');",
+              "});",
+              "",
+              "pm.collectionVariables.unset('facility_id');"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "key": "facility_id",
+      "value": ""
+    },
+    {
+      "key": "facility_name",
+      "value": ""
+    },
+    {
+      "key": "facility_description",
+      "value": ""
+    },
+    {
+      "key": "updated_facility_name",
+      "value": ""
+    },
+    {
+      "key": "updated_facility_description",
+      "value": ""
+    }
+  ]
+}

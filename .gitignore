@@ -8,6 +8,8 @@ venv/
 test-results/
 playwright-report/
 blob-report/
+.auth/
+api/.auth/
 
 # Node.js
 node_modules/
