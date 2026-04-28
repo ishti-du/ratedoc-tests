@@ -50,7 +50,7 @@ playwright install chromium
 
 Run all tests in verbose mode:
 ```bash
-pytest test_helpful_toggle.py -v
+pytest test_helpful_review.py -v
 ```
 
 ```bash
