@@ -23,18 +23,18 @@
           "script": {
             "exec": [
               "pm.test(\"Status code is 200\", function () {",
-              "    pm.response.to.have.status(200);",
+              "  pm.response.to.have.status(200);",
               "});",
               "",
               "const json = pm.response.json();",
               "const items = Array.isArray(json) ? json : (json.items || []);",
               "",
               "pm.test(\"Countries list exists\", function () {",
-              "    pm.expect(items).to.be.an(\"array\");",
+              "  pm.expect(items).to.be.an(\"array\");",
               "});",
               "",
               "if (items.length > 0) {",
-              "    pm.environment.set(\"countryId\", items[0].id || items[0]._id);",
+              "  pm.environment.set(\"countryId\", items[0].id || items[0]._id);",
               "}"
             ]
           }
@@ -51,7 +51,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"name\": \"Test City\",\n  \"countryId\": \"{{countryId}}\"\n}"
+          "raw": "{\n  \"name\": \"Test City\",\n  \"country_id\": {{countryId}}\n}"
         },
         "url": {
           "raw": "{{base_url}}/api/v1/cities",
@@ -65,11 +65,22 @@
           "script": {
             "exec": [
               "pm.test(\"Status code is 200 or 201\", function () {",
-              "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+              "  pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
               "});",
               "",
+              "if (pm.response.code !== 200 && pm.response.code !== 201) {",
+              "  console.log(\"Create City FAILED:\", pm.response.text());",
+              "  postman.setNextRequest(null);",
+              "  return;",
+              "}",
+              "",
               "const json = pm.response.json();",
-              "pm.environment.set(\"cityId\", json.id || json._id);"
+              "",
+              "pm.test(\"City ID exists\", function () {",
+              "  pm.expect(json.id).to.exist;",
+              "});",
+              "",
+              "pm.environment.set(\"cityId\", json.id);"
             ]
           }
         }
@@ -93,13 +104,13 @@
           "script": {
             "exec": [
               "pm.test(\"Status code is 200\", function () {",
-              "    pm.response.to.have.status(200);",
+              "  pm.response.to.have.status(200);",
               "});",
               "",
               "const json = pm.response.json();",
               "",
               "pm.test(\"City ID matches\", function () {",
-              "    pm.expect(json.id || json._id).to.eql(pm.environment.get(\"cityId\"));",
+              "  pm.expect(json.id).to.eql(pm.environment.get(\"cityId\"));",
               "});"
             ]
           }
@@ -116,7 +127,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"name\": \"Updated Test City\"\n}"
+          "raw": "{\n  \"name\": \"Updated Test City\",\n  \"country_id\": {{countryId}}\n}"
         },
         "url": {
           "raw": "{{base_url}}/api/v1/cities/{{cityId}}",
@@ -130,13 +141,13 @@
           "script": {
             "exec": [
               "pm.test(\"Status code is 200\", function () {",
-              "    pm.response.to.have.status(200);",
+              "  pm.response.to.have.status(200);",
               "});",
               "",
               "const json = pm.response.json();",
               "",
               "pm.test(\"City updated\", function () {",
-              "    pm.expect(json.name).to.eql(\"Updated Test City\");",
+              "  pm.expect(json.name).to.eql(\"Updated Test City\");",
               "});"
             ]
           }
@@ -161,7 +172,7 @@
           "script": {
             "exec": [
               "pm.test(\"Status code is 200 or 204\", function () {",
-              "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+              "  pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
               "});"
             ]
           }
@@ -186,7 +197,7 @@
           "script": {
             "exec": [
               "pm.test(\"City no longer exists\", function () {",
-              "    pm.expect(pm.response.code).to.be.oneOf([404, 410]);",
+              "  pm.expect(pm.response.code).to.be.oneOf([404, 410]);",
               "});"
             ]
           }
