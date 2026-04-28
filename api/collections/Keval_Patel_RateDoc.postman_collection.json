@@ -1,0 +1,237 @@
+{
+  "info": {
+    "name": "RateDoc Tests - Keval Patel",
+    "description": "TC7 - specialization filter, TC26 - hospital location filter",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "get cardiology dept id",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('200', () => pm.response.to.have.status(200));",
+              "const list = pm.response.json();",
+              "const c = list.find(d => d.name === 'Cardiology');",
+              "pm.test('cardiology exists', () => pm.expect(c).to.exist);",
+              "pm.environment.set('cardio_id', c.id);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/v1/departments",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "departments"]
+        }
+      }
+    },
+    {
+      "name": "TC7 - filter doctors by cardiology dept",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('200', () => pm.response.to.have.status(200));",
+              "const body = pm.response.json();",
+              "pm.test('has items', () => pm.expect(body.items).to.be.an('array'));",
+              "pm.test('not empty', () => pm.expect(body.items.length).to.be.above(0));",
+              "const id = parseInt(pm.environment.get('cardio_id'));",
+              "pm.test('all in cardiology dept', () => {",
+              "  const bad = body.items.filter(d => d.department_id !== id);",
+              "  pm.expect(bad.map(d => d.name)).to.have.lengthOf(0);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/v1/doctors?department_id={{cardio_id}}&size=50",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "doctors"],
+          "query": [
+            { "key": "department_id", "value": "{{cardio_id}}" },
+            { "key": "size", "value": "50" }
+          ]
+        }
+      }
+    },
+    {
+      "name": "TC7 - search=Cardiology",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('200', () => pm.response.to.have.status(200));",
+              "const body = pm.response.json();",
+              "pm.test('has items', () => pm.expect(body.items).to.be.an('array'));",
+              "const id = parseInt(pm.environment.get('cardio_id'));",
+              "pm.test('all linked to cardiology', () => {",
+              "  const bad = body.items.filter(d => {",
+              "    const t = (d.specializations || '').toLowerCase();",
+              "    return !t.includes('cardio') && d.department_id !== id;",
+              "  });",
+              "  pm.expect(bad.map(d => d.name)).to.have.lengthOf(0);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/v1/doctors?search=Cardiology&size=50",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "doctors"],
+          "query": [
+            { "key": "search", "value": "Cardiology" },
+            { "key": "size", "value": "50" }
+          ]
+        }
+      }
+    },
+    {
+      "name": "get cumilla city id",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('200', () => pm.response.to.have.status(200));",
+              "const cities = pm.response.json();",
+              "const c = cities.find(x => x.name === 'Cumilla');",
+              "pm.test('cumilla exists', () => pm.expect(c).to.exist);",
+              "pm.environment.set('cumilla_id', c.id);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/v1/cities?limit=100",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "cities"],
+          "query": [{ "key": "limit", "value": "100" }]
+        }
+      }
+    },
+    {
+      "name": "TC26 - hospitals filtered by cumilla",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('200', () => pm.response.to.have.status(200));",
+              "const body = pm.response.json();",
+              "pm.test('has items', () => pm.expect(body.items).to.be.an('array'));",
+              "pm.test('not empty', () => pm.expect(body.items.length).to.be.above(0));",
+              "const id = parseInt(pm.environment.get('cumilla_id'));",
+              "pm.test('all city_id matches', () => {",
+              "  const bad = body.items.filter(h => h.city_id !== id);",
+              "  pm.expect(bad.map(h => h.name)).to.have.lengthOf(0);",
+              "});",
+              "pm.test('all city.name === Cumilla', () => {",
+              "  const bad = body.items.filter(h => h.city && h.city.name && h.city.name !== 'Cumilla');",
+              "  pm.expect(bad.map(h => h.name)).to.have.lengthOf(0);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/v1/hospitals?city_id={{cumilla_id}}&size=50",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "hospitals"],
+          "query": [
+            { "key": "city_id", "value": "{{cumilla_id}}" },
+            { "key": "size", "value": "50" }
+          ]
+        }
+      }
+    },
+    {
+      "name": "TC26 - dhaka filter shouldn't have cumilla",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('200', () => pm.response.to.have.status(200));",
+              "const body = pm.response.json();",
+              "const cumilla = parseInt(pm.environment.get('cumilla_id'));",
+              "pm.test('no cumilla leak', () => {",
+              "  const leaked = body.items.filter(h => h.city_id === cumilla);",
+              "  pm.expect(leaked).to.have.lengthOf(0);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/v1/hospitals?city_id=1&size=50",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "hospitals"],
+          "query": [
+            { "key": "city_id", "value": "1" },
+            { "key": "size", "value": "50" }
+          ]
+        }
+      }
+    },
+    {
+      "name": "TC26 - bad city id returns empty",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('200', () => pm.response.to.have.status(200));",
+              "const body = pm.response.json();",
+              "pm.test('empty items', () => pm.expect(body.items).to.eql([]));"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/v1/hospitals?city_id=999999&size=10",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "hospitals"],
+          "query": [
+            { "key": "city_id", "value": "999999" },
+            { "key": "size", "value": "10" }
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -1,22 +1,26 @@
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-venv/
-.pytest_cache/
-.playwright/
-test-results/
-playwright-report/
-blob-report/
-
-# Node.js
-node_modules/
-package-lock.json
-npm-debug.log*
-
-# OS
-.DS_Store
-Thumbs.db
 
 # API
+# Node.js
+# OS
+# Python
+*$py.class
+*.py[cod]
+.DS_Store
+.playwright/
+.pytest_cache/
+Thumbs.db
+__pycache__/
 api/newman/
+api/node_modules/
+api/package-lock.json
+blob-report/
+e2e/.pytest_cache/
+e2e/report.html
+e2e/tests/__pycache__/
+e2e/venv/
+node_modules/
+npm-debug.log*
+package-lock.json
+playwright-report/
+test-results/
+venv/
