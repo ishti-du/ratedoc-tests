@@ -53,7 +53,9 @@ Run all tests in verbose mode:
 pytest test_helpful_toggle.py -v
 ```
 
-
+```bash
+pytest test_pending_providers.py -v
+```
 
 
 
