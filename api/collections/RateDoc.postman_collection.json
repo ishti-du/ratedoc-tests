@@ -23,7 +23,7 @@
             },
             "body": {
                 "mode": "raw",
-                "raw": "{\n  \"email\": \"REAL_ADMIN_EMAIL_HERE\",\n  \"password\": \"REAL_ADMIN_PASSWORD_HERE\"\n}"
+                "raw": "{\n  \"email\": \"admin@ratedoc.com\",\n  \"password\": \"DeyaJabeNa!023\"\n}"
             }
         },
         "event": [
@@ -72,7 +72,7 @@
             },
             "body": {
                 "mode": "raw",
-                "raw": "{\n  \"name\": \"{{diagnosticCenterName}} {{$timestamp}}\",\n  \"address\": \"123 Nick Test Street\",\n  \"phone\": \"1234567890\",\n  \"email\": \"nick.diagnostic{{$timestamp}}@test.com\",\n  \"city_id\": 1,\n  \"description\": \"Diagnostic center created by Nick API tests\"\n}"
+                "raw": "{\n  \"name\": \"Nick Diagnostic Center {{$timestamp}}\",\n  \"address\": \"123 Nick Test Street\",\n  \"city_id\": 1,\n  \"country_id\": 1,\n  \"phone\": \"1234567890\",\n  \"website\": \"https://nick-test-center.com\",\n  \"photo_url\": \"https://example.com/photo.jpg\",\n  \"google_map_link\": \"https://maps.google.com/?q=Nick+Diagnostic+Center\"\n}"
             }
         },
         "event": [
