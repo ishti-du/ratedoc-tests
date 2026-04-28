@@ -13,7 +13,9 @@ For Swagger UI for API documents, visit: http://159.89.231.16:3001/docs
 1. Create and activate a virtual environment:
    ```bash
    cd e2e
-   python3 -m venv venv
+   python -m venv venv
+   # Windows PowerShell
+   .\\venv\\Scripts\\Activate.ps1
    source venv/bin/activate
    ```
 2. Install dependencies:
@@ -25,6 +27,10 @@ For Swagger UI for API documents, visit: http://159.89.231.16:3001/docs
 Run tests using pytest:
 ```bash
 pytest tests/ --base-url http://159.89.231.16:3000/
+```
+Run headless if needed:
+```bash
+pytest tests/ --headless --base-url http://159.89.231.16:3000/
 ```
 
 ## API Testing (Newman CLI)
@@ -44,3 +50,9 @@ Or manually:
 ```bash
 newman run collections/<collection_file>.json -e environments/<environment_file>.json
 ```
+
+Staging environment file:
+```bash
+api/environments/Staging.postman_environment.json
+```
+Before running API tests, set valid `adminUsername` and `adminPassword` values in the staging environment file. The collection will login first, store `adminToken`, and reuse it for the admin hospital requests.
