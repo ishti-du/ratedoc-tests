@@ -1,8 +1,8 @@
 {
   "info": {
-    "name": "RateDoc Cities API Tests (Stable)",
+    "name": "RateDoc Cities API Tests (Full CRUD)",
     "_postman_id": "99999999-8888-7777-6666-555555555555",
-    "description": "API tests for Cities",
+    "description": "Full CRUD API tests for Cities (Create, Read, Update, Delete)",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -41,11 +41,18 @@
         }
       ]
     },
+
     {
-      "name": "Get Cities",
+      "name": "Create City",
       "request": {
-        "method": "GET",
-        "header": [],
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Test City\",\n  \"countryId\": \"{{countryId}}\"\n}"
+        },
         "url": {
           "raw": "{{base_url}}/api/v1/cities",
           "host": ["{{base_url}}"],
@@ -57,25 +64,18 @@
           "listen": "test",
           "script": {
             "exec": [
-              "pm.test(\"Status code is 200\", function () {",
-              "    pm.response.to.have.status(200);",
+              "pm.test(\"Status code is 200 or 201\", function () {",
+              "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
               "});",
               "",
               "const json = pm.response.json();",
-              "const items = Array.isArray(json) ? json : (json.items || []);",
-              "",
-              "pm.test(\"Cities list exists\", function () {",
-              "    pm.expect(items).to.be.an(\"array\");",
-              "});",
-              "",
-              "if (items.length > 0) {",
-              "    pm.environment.set(\"cityId\", items[0].id || items[0]._id);",
-              "}"
+              "pm.environment.set(\"cityId\", json.id || json._id);"
             ]
           }
         }
       ]
     },
+
     {
       "name": "Get City by ID",
       "request": {
@@ -92,35 +92,36 @@
           "listen": "test",
           "script": {
             "exec": [
-              "pm.test(\"Status code is valid\", function () {",
-              "    pm.expect(pm.response.code).to.be.oneOf([200, 404]);",
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
               "});",
               "",
-              "if (pm.response.code === 200) {",
-              "    pm.test(\"Response is JSON\", function () {",
-              "        pm.response.to.be.json;",
-              "    });",
+              "const json = pm.response.json();",
               "",
-              "    const json = pm.response.json();",
-              "",
-              "    pm.test(\"City object exists\", function () {",
-              "        pm.expect(json).to.exist;",
-              "    });",
-              "}"
+              "pm.test(\"City ID matches\", function () {",
+              "    pm.expect(json.id || json._id).to.eql(pm.environment.get(\"cityId\"));",
+              "});"
             ]
           }
         }
       ]
     },
+
     {
-      "name": "Invalid City ID Test",
+      "name": "Update City",
       "request": {
-        "method": "GET",
-        "header": [],
+        "method": "PUT",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Updated Test City\"\n}"
+        },
         "url": {
-          "raw": "{{base_url}}/api/v1/cities/999999999",
+          "raw": "{{base_url}}/api/v1/cities/{{cityId}}",
           "host": ["{{base_url}}"],
-          "path": ["api", "v1", "cities", "999999999"]
+          "path": ["api", "v1", "cities", "{{cityId}}"]
         }
       },
       "event": [
@@ -128,8 +129,64 @@
           "listen": "test",
           "script": {
             "exec": [
-              "pm.test(\"Invalid ID returns error\", function () {",
-              "    pm.expect(pm.response.code).to.be.oneOf([404, 422]);",
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "const json = pm.response.json();",
+              "",
+              "pm.test(\"City updated\", function () {",
+              "    pm.expect(json.name).to.eql(\"Updated Test City\");",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Delete City",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/v1/cities/{{cityId}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "cities", "{{cityId}}"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200 or 204\", function () {",
+              "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Verify City Deleted",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/v1/cities/{{cityId}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "cities", "{{cityId}}"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"City no longer exists\", function () {",
+              "    pm.expect(pm.response.code).to.be.oneOf([404, 410]);",
               "});"
             ]
           }
