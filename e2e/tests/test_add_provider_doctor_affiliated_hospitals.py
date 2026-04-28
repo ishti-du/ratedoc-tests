@@ -20,7 +20,7 @@ import pytest
 from playwright.sync_api import Page, expect
 
 
-BASE_URL        = "http://159.89.231.16:3000/auth"
+BASE_URL        = "http://159.89.231.16:3000"
 # Update with the correct add provider URL
 ADD_PROVIDER_URL = f"{BASE_URL}/admin/providers/add"
 # Update with valid staging admin credentials

@@ -29,7 +29,7 @@ For Swagger UI for API documents, visit: http://159.89.231.16:3001/docs
    ```
 2. Run tests using pytest:
    ```bash
-   pytest tests/ --base-url http://159.89.231.16:3000/
+   pytest -s --headed --slowmo 500 tests/ --base-url http://159.89.231.16:3000
    ```
 
 ## API Testing (Newman CLI)
