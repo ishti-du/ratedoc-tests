@@ -11,19 +11,67 @@ Test Case:
 This test is self-contained: it creates its own review and deletes it,
 so it can be run repeatedly without leaving leftover data.
 
-Credentials and DOCTOR_URL below must match the staging environment.
+Pre-test cleanup uses the admin API to remove any stuck review (e.g. one
+that was rejected by admin tests), because the user endpoint only returns
+approved reviews and a rejected review blocks new creation.
 """
 
 import re
+import requests as http
 from playwright.sync_api import Page, expect
 
 
-BASE_URL       = "http://159.89.231.16:3000"
-DOCTOR_URL     = f"{BASE_URL}/doctor/dr-john-smith-7a055de9"
-TEST_EMAIL     = "tests1234@gmail.com"
-TEST_PASSWORD  = "abc123456"
-REVIEW_TEXT    = "[Test] Automated review – will be deleted by this test."
+BASE_URL        = "http://159.89.231.16:3000"
+API_URL         = "http://159.89.231.16:3001"
+DOCTOR_SLUG     = "dr-john-smith-7a055de9"
+DOCTOR_URL      = f"{BASE_URL}/doctor/{DOCTOR_SLUG}"
+TEST_EMAIL      = "tests1234@gmail.com"
+TEST_PASSWORD   = "abc123456"
+TEST_USER_ID    = "615cae14-9a22-450a-9cc2-3f551f8bac29"
+ADMIN_EMAIL     = "admin@ratedoc.com"
+ADMIN_PASSWORD  = "DeyaJabeNa!023"
+REVIEW_TEXT     = "[Test] Automated review – will be deleted by this test."
 
+
+# ---------------------------------------------------------------------------
+# API-level cleanup (runs before browser opens, handles any review status)
+# ---------------------------------------------------------------------------
+
+def api_delete_stuck_reviews() -> None:
+    """
+    Use the admin API to delete any review the test user left on this doctor.
+    Needed because the user endpoint only returns approved reviews, but a
+    rejected/pending review still blocks new creation with 'already submitted'.
+    """
+    resp = http.post(
+        f"{API_URL}/api/v1/auth/login",
+        json={"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD},
+        timeout=10,
+    )
+    token = resp.json().get("access_token", "")
+    if not token:
+        return
+
+    headers = {"Authorization": f"Bearer {token}"}
+    reviews = http.get(
+        f"{API_URL}/api/v1/admin/reviews",
+        params={"provider_slug": DOCTOR_SLUG, "size": 100},
+        headers=headers,
+        timeout=10,
+    ).json().get("items", [])
+
+    for review in reviews:
+        if review.get("user_id") == TEST_USER_ID:
+            http.delete(
+                f"{API_URL}/api/v1/admin/reviews/{review['id']}",
+                headers=headers,
+                timeout=10,
+            )
+
+
+# ---------------------------------------------------------------------------
+# Browser helpers
+# ---------------------------------------------------------------------------
 
 def login(page: Page) -> None:
     """Navigate to /auth and log in with the test account."""
@@ -36,16 +84,26 @@ def login(page: Page) -> None:
     page.wait_for_url(f"{BASE_URL}/", timeout=10000)
 
 
-def wait_for_review_form(page: Page, timeout: int = 15000) -> None:
-    """Wait until the review form textarea is visible (auth + doctor data both loaded)."""
+def wait_for_form_stable(page: Page, timeout: int = 15000) -> None:
+    """
+    Wait until the review form is fully initialised:
+      - textarea visible (auth resolved + doctor data loaded)
+      - action button visible (useUserReviewForProvider query completed)
+    The second check prevents a race where the form renders in new-review mode
+    before the user's existing review is fetched, causing cleanup to be skipped.
+    """
     page.get_by_placeholder("Share your experience...").wait_for(
         state="visible", timeout=timeout
     )
+    # Either "Submit Review" (new mode) or "Update Review" (edit mode) must appear
+    page.locator(
+        "button:has-text('Submit Review'), button:has-text('Update Review')"
+    ).first.wait_for(state="visible", timeout=timeout)
 
 
-def cleanup_existing_review(page: Page) -> None:
-    """If the test user already has a review for this doctor, delete it first."""
-    wait_for_review_form(page)
+def cleanup_ui_review(page: Page) -> None:
+    """If the form is in edit mode (user has an approved review), delete it via the UI."""
+    wait_for_form_stable(page)
 
     delete_btn = page.get_by_role("button", name="Delete Review")
     if not delete_btn.is_visible():
@@ -53,7 +111,7 @@ def cleanup_existing_review(page: Page) -> None:
 
     page.once("dialog", lambda d: d.accept())
     delete_btn.click()
-    # Wait for form to return to new-review mode (Submit Review button reappears)
+    # Wait for form to return to new-review mode
     page.get_by_role("button", name="Submit Review").wait_for(
         state="visible", timeout=10000
     )
@@ -61,7 +119,6 @@ def cleanup_existing_review(page: Page) -> None:
 
 def click_star(page: Page, label_text: str, star_num: int = 4) -> None:
     """Click the Nth star in the rating section identified by label_text."""
-    # Narrow to the mb-4 div that contains this label AND has star buttons
     section = (
         page.locator(".mb-4")
         .filter(has_text=label_text)
@@ -73,8 +130,7 @@ def click_star(page: Page, label_text: str, star_num: int = 4) -> None:
 
 def submit_review(page: Page) -> None:
     """Fill all required fields and submit the review form."""
-    # Wait for the form to be ready (confirms auth resolved + doctor data loaded)
-    wait_for_review_form(page)
+    wait_for_form_stable(page)
 
     # Visit Date (required)
     page.locator("input[type='date']").fill("2025-01-15")
@@ -88,7 +144,7 @@ def submit_review(page: Page) -> None:
     ]:
         click_star(page, label, star_num=4)
 
-    # Overall Rating (required) – click the 4th star
+    # Overall Rating (required)
     click_star(page, "Your Overall Rating", star_num=4)
 
     # Optional comment – used to verify the review was saved
@@ -103,10 +159,13 @@ def delete_review(page: Page) -> None:
     delete_btn = page.get_by_role("button", name="Delete Review")
     expect(delete_btn).to_be_visible(timeout=10000)
 
-    # Register dialog handler before clicking
     page.once("dialog", lambda d: d.accept())
     delete_btn.click()
 
+
+# ---------------------------------------------------------------------------
+# Test class
+# ---------------------------------------------------------------------------
 
 class TestDoctorReviewDelete:
     """End-to-end tests for creating and deleting a doctor review."""
@@ -117,11 +176,14 @@ class TestDoctorReviewDelete:
         showing the saved comment and a 'Delete Review' button.
         Cleans up by deleting the review at the end.
         """
+        # API-level cleanup handles stuck reviews in any status (pending/rejected)
+        api_delete_stuck_reviews()
+
         login(page)
         page.goto(DOCTOR_URL)
 
-        # Remove any leftover review from a previous failed run
-        cleanup_existing_review(page)
+        # UI-level cleanup handles an approved leftover review (visible in the form)
+        cleanup_ui_review(page)
 
         submit_review(page)
 
@@ -143,11 +205,14 @@ class TestDoctorReviewDelete:
           3. Click Delete Review and confirm.
           4. Verify the review is gone (form back to new-review mode).
         """
+        # API-level cleanup handles stuck reviews in any status (pending/rejected)
+        api_delete_stuck_reviews()
+
         login(page)
         page.goto(DOCTOR_URL)
 
-        # Remove any leftover review from a previous failed run
-        cleanup_existing_review(page)
+        # UI-level cleanup handles an approved leftover review (visible in the form)
+        cleanup_ui_review(page)
 
         # Step 1: create the review
         submit_review(page)
