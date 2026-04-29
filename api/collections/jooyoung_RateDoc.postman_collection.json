@@ -1,0 +1,371 @@
+{
+  "info": {
+    "name": "jooyoung_RateDoc API Tests",
+    "description": "Create and delete a hospital, doctor, and department.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Login - Get Auth Token",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/x-www-form-urlencoded"
+          }
+        ],
+        "url": "{{base_url}}/api/v1/auth/token",
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "username",
+              "value": "{{email}}"
+            },
+            {
+              "key": "password",
+              "value": "{{password}}"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Login succeeds', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "const response = pm.response.json();",
+              "pm.environment.set('token', response.access_token);",
+              "pm.environment.unset('hospital_id');",
+              "pm.environment.unset('doctor_id');",
+              "",
+              "pm.test('Token is saved', function () {",
+              "    pm.expect(pm.environment.get('token')).to.exist;",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Get City and Country IDs",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/api/v1/cities?limit=1"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('City lookup succeeds', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "const city = pm.response.json()[0];",
+              "pm.environment.set('city_id', city.id);",
+              "pm.environment.set('country_id', city.country_id);",
+              "",
+              "pm.test('City and country IDs are saved', function () {",
+              "    pm.expect(city.id).to.exist;",
+              "    pm.expect(city.country_id).to.exist;",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Create Hospital",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": "{{base_url}}/api/v1/admin/hospitals",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Jooyoung Test Hospital {{$timestamp}}\",\n  \"address\": \"123 Test Road\",\n  \"city_id\": {{city_id}},\n  \"country_id\": {{country_id}},\n  \"phone\": \"1234567890\",\n  \"website\": \"https://example.com\",\n  \"photo_url\": \"https://example.com/photo.jpg\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Hospital is created', function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "",
+              "const hospital = pm.response.json();",
+              "pm.environment.set('hospital_id', hospital.id);",
+              "",
+              "pm.test('Hospital ID is saved', function () {",
+              "    pm.expect(hospital.id).to.exist;",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Delete Hospital",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": "{{base_url}}/api/v1/admin/hospitals/{{hospital_id}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Hospital is deleted', function () {",
+              "    pm.response.to.have.status(200);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Confirm Hospital Deleted",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": "{{base_url}}/api/v1/admin/hospitals/{{hospital_id}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Deleted hospital cannot be found', function () {",
+              "    pm.expect(pm.response.code).to.be.oneOf([404, 410]);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Create Doctor",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": "{{base_url}}/api/v1/admin/doctors",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Dr. Jooyoung Test {{$timestamp}}\",\n  \"specializations\": \"Dermatology\",\n  \"qualifications\": \"MBBS\",\n  \"department_id\": {{department_id}},\n  \"city_id\": {{city_id}},\n  \"country_id\": {{country_id}},\n  \"gender\": \"male\",\n  \"photo_url\": \"https://example.com/photo.jpg\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Doctor is created', function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "",
+              "const doctor = pm.response.json();",
+              "pm.environment.set('doctor_id', doctor.id);",
+              "",
+              "pm.test('Doctor ID is saved', function () {",
+              "    pm.expect(doctor.id).to.exist;",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Delete Doctor",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": "{{base_url}}/api/v1/admin/doctors/{{doctor_id}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Doctor is deleted', function () {",
+              "    pm.response.to.have.status(200);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Confirm Doctor Deleted",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": "{{base_url}}/api/v1/admin/doctors/{{doctor_id}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Deleted doctor cannot be found', function () {",
+              "    pm.expect(pm.response.code).to.be.oneOf([404, 410]);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Create Department",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": "{{base_url}}/api/v1/departments",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Jooyoung Test Department {{$timestamp}}\",\n  \"description\": \"Temporary API test department\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Department is created', function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "",
+              "if (pm.response.code !== 201) {",
+              "    pm.execution.setNextRequest(null);",
+              "    return;",
+              "}",
+              "",
+              "const department = pm.response.json();",
+              "pm.environment.set('department_id', department.id);",
+              "",
+              "pm.test('Department ID is saved', function () {",
+              "    pm.expect(department.id).to.exist;",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Delete Department",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": "{{base_url}}/api/v1/departments/{{department_id}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Department is deleted', function () {",
+              "    pm.response.to.have.status(200);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Confirm Department Deleted",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": "{{base_url}}/api/v1/departments/{{department_id}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Deleted department cannot be found', function () {",
+              "    pm.expect(pm.response.code).to.be.oneOf([404, 410]);",
+              "});"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
