@@ -41,8 +41,9 @@ def test_add_doctor_basic(page: Page):
     # Submit
     page.get_by_role("button", name="Submit Doctor").click()
 
-    page.wait_for_timeout(3000)
-
-    # Verify no obvious error
+    # Verify the site accepted the doctor submission
+    expect(page.locator("body")).to_contain_text(
+        "Doctor submitted and pending admin approval.", timeout=10000
+    )
     expect(page.locator("body")).not_to_contain_text("Something went wrong")
     expect(page.locator("body")).not_to_contain_text("Error")
