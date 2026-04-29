@@ -2,90 +2,89 @@
   "info": {
     "_postman_id": "d6b6a3e5-fac1-4325-bf3d-f86e5886a89e",
     "name": "RateMyDoctor",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_exporter_id": "53628062",
-    "_collection_link": "https://go.postman.co/collection/53628062-d6b6a3e5-fac1-4325-bf3d-f86e5886a89e?source=collection_link"
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
-      "name": "Authentication",
+      "name": "Auth Login",
       "event": [
         {
           "listen": "test",
           "script": {
             "exec": [
-              "pm.test(\"Status code is 201\", function () {",
-              "    pm.response.to.have.status(201);",
+              "pm.test('Login successful', function () {",
+              "    pm.response.to.have.status(200);",
               "});",
               "",
               "const response = pm.response.json();",
-              "",
-              "console.log(response);"
+              "pm.collectionVariables.set('accessToken', response.access_token);",
+              "console.log('Token saved:', response.access_token ? 'YES' : 'MISSING');"
             ],
-            "type": "text/javascript",
-            "packages": {},
-            "requests": {}
+            "type": "text/javascript"
           }
         }
       ],
       "request": {
-        "auth": {
-          "type": "noauth"
-        },
+        "auth": { "type": "noauth" },
         "method": "POST",
-        "header": [],
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"email\": \"avik@example.com\",\n  \"password\": \"password123\",\n  \"name\": \"Avik\"\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
+          "raw": "{\n  \"email\": \"avik@example.com\",\n  \"password\": \"password123\"\n}",
+          "options": { "raw": { "language": "json" } }
         },
         "url": {
-          "raw": "{{baseURL}}/api/v1/auth/register",
-          "host": [
-            "{{baseURL}}"
-          ],
-          "path": [
-            "api",
-            "v1",
-            "auth",
-            "register"
-          ]
+          "raw": "{{baseURL}}/api/v1/auth/login",
+          "host": ["{{baseURL}}"],
+          "path": ["api", "v1", "auth", "login"]
         }
       },
       "response": []
     },
     {
-      "name": "Auth Login",
-      "request": {
-        "auth": {
-          "type": "noauth"
-        },
-        "method": "POST",
-        "header": [],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"email\": \"avik@example.com\",\n  \"password\": \"password123\"\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
+      "name": "Create Review",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "const uniqueComment = 'TEST_REVIEW_' + Date.now();",
+              "pm.collectionVariables.set('test_comment', uniqueComment);",
+              "console.log('Using comment:', uniqueComment);"
+            ],
+            "type": "text/javascript"
           }
         },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Review created successfully', function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "",
+              "console.log('Create response:', pm.response.json());"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+        },
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"provider_type\": \"doctor\",\n  \"provider_slug\": \"dr-md-khaled-mohsin-001efb08\",\n  \"visit_date\": \"2026-04-28T17:40:22.106Z\",\n  \"rating\": 1,\n  \"comment\": \"{{test_comment}}\",\n  \"is_anonymous\": false,\n  \"extra_info\": {\n    \"anonymous_tag\": \"TJY8\",\n    \"question_scores\": {\n      \"listens_carefully\": 1,\n      \"staff_cooperative\": 1,\n      \"explains_treatment_options\": 1,\n      \"prescribes_effective_treatment\": 1\n    },\n    \"wait_time_bucket\": \"gt_60\"\n  }\n}",
+          "options": { "raw": { "language": "json" } }
+        },
         "url": {
-          "raw": "{{baseURL}}/api/v1/auth/login",
-          "host": [
-            "{{baseURL}}"
-          ],
-          "path": [
-            "api",
-            "v1",
-            "auth",
-            "login"
-          ]
+          "raw": "{{baseURL}}/api/v1/reviews",
+          "host": ["{{baseURL}}"],
+          "path": ["api", "v1", "reviews"]
         }
       },
       "response": []
@@ -97,93 +96,43 @@
           "listen": "test",
           "script": {
             "exec": [
-              "pm.test(\"Status code is 200\", function () {",
+              "pm.test('List reviews returns 200', function () {",
               "    pm.response.to.have.status(200);",
               "});",
               "",
-              "const response = pm.response.json();",
+              "const body = pm.response.json();",
               "",
-              "console.log(response);"
+              "// Response shape is {items: [...]}", 
+              "const reviews = body.items || [];",
+              "",
+              "const testComment = pm.collectionVariables.get('test_comment');",
+              "console.log('Looking for comment:', testComment);",
+              "console.log('Total reviews in list:', reviews.length);",
+              "",
+              "const createdReview = reviews.find(r => r.comment === testComment);",
+              "",
+              "pm.test('Created review found in list', function () {",
+              "    pm.expect(createdReview, 'Could not find review with comment: ' + testComment).to.not.be.undefined;",
+              "});",
+              "",
+              "if (createdReview) {",
+              "    const reviewId = createdReview.id;",
+              "    pm.collectionVariables.set('review_id', reviewId);",
+              "    console.log('Saved review_id:', reviewId);",
+              "}"
             ],
-            "type": "text/javascript",
-            "packages": {},
-            "requests": {}
+            "type": "text/javascript"
           }
         }
       ],
       "request": {
-        "auth": {
-          "type": "noauth"
-        },
+        "auth": { "type": "noauth" },
         "method": "GET",
         "header": [],
         "url": {
           "raw": "{{baseURL}}/api/v1/reviews",
-          "host": [
-            "{{baseURL}}"
-          ],
-          "path": [
-            "api",
-            "v1",
-            "reviews"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Create Review",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test(\"Status code is 201\", function () {",
-              "    pm.response.to.have.status(201);",
-              "});",
-              "",
-              "const response = pm.response.json();",
-              "",
-              "console.log(response);"
-            ],
-            "type": "text/javascript",
-            "packages": {},
-            "requests": {}
-          }
-        }
-      ],
-      "request": {
-        "auth": {
-          "type": "bearer",
-          "bearer": [
-            {
-              "key": "token",
-              "value": "{{accessToken}}",
-              "type": "string"
-            }
-          ]
-        },
-        "method": "POST",
-        "header": [],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"provider_type\": \"doctor\",\n  \"provider_slug\": \"dr-md-khaled-mohsin-001efb08\",\n  \"visit_date\": \"2026-04-28T17:40:22.106Z\",\n  \"rating\": 1,\n  \"comment\": \"TEST COMMENT\",\n  \"is_anonymous\": false,\n  \"extra_info\": {\n                \"anonymous_tag\": \"TJY8\",\n                \"question_scores\": {\n                    \"listens_carefully\": 1,\n                    \"staff_cooperative\": 1,\n                    \"explains_treatment_options\": 1,\n                    \"prescribes_effective_treatment\": 1\n                },\n                \"wait_time_bucket\": \"gt_60\"\n            }   \n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "{{baseURL}}/api/v1/reviews",
-          "host": [
-            "{{baseURL}}"
-          ],
-          "path": [
-            "api",
-            "v1",
-            "reviews"
-          ]
+          "host": ["{{baseURL}}"],
+          "path": ["api", "v1", "reviews"]
         }
       },
       "response": []
@@ -195,37 +144,33 @@
           "listen": "test",
           "script": {
             "exec": [
-              "pm.test(\"Status code is 200\", function () {",
+              "pm.test('Get review returns 200', function () {",
               "    pm.response.to.have.status(200);",
               "});",
               "",
-              "const response = pm.response.json();",
+              "const review = pm.response.json();",
               "",
-              "console.log(response);"
+              "pm.test('Returns correct review ID', function () {",
+              "    const reviewId = pm.collectionVariables.get('review_id');",
+              "    pm.expect(String(review.id)).to.equal(String(reviewId));",
+              "});",
+              "",
+              "pm.test('Review has correct comment', function () {",
+              "    pm.expect(review.comment).to.equal(pm.collectionVariables.get('test_comment'));",
+              "});"
             ],
-            "type": "text/javascript",
-            "packages": {},
-            "requests": {}
+            "type": "text/javascript"
           }
         }
       ],
       "request": {
-        "auth": {
-          "type": "noauth"
-        },
+        "auth": { "type": "noauth" },
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "{{baseURL}}/api/v1/reviews/24",
-          "host": [
-            "{{baseURL}}"
-          ],
-          "path": [
-            "api",
-            "v1",
-            "reviews",
-            "24"
-          ]
+          "raw": "{{baseURL}}/api/v1/reviews/{{review_id}}",
+          "host": ["{{baseURL}}"],
+          "path": ["api", "v1", "reviews", "{{review_id}}"]
         }
       },
       "response": []
@@ -237,53 +182,38 @@
           "listen": "test",
           "script": {
             "exec": [
-              "pm.test(\"Status code is 200\", function () {",
+              "pm.test('Update review returns 200', function () {",
               "    pm.response.to.have.status(200);",
               "});",
               "",
-              "const response = pm.response.json();",
+              "const review = pm.response.json();",
               "",
-              "console.log(response);"
+              "pm.test('Comment was updated', function () {",
+              "    pm.expect(review.comment).to.equal('UPDATED TEST COMMENT');",
+              "});",
+              "",
+              "console.log('Updated review:', review);"
             ],
-            "type": "text/javascript",
-            "packages": {},
-            "requests": {}
+            "type": "text/javascript"
           }
         }
       ],
       "request": {
         "auth": {
           "type": "bearer",
-          "bearer": [
-            {
-              "key": "token",
-              "value": "{{accessToken}}",
-              "type": "string"
-            }
-          ]
+          "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
         },
         "method": "PUT",
-        "header": [],
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"provider_type\": \"doctor\",\n  \"provider_slug\": \"dr-md-khaled-mohsin-001efb08\",\n  \"visit_date\": \"2026-04-28T17:40:22.106Z\",\n  \"rating\": 1,\n  \"comment\": \"UPDATED TEST COMMENT\",\n  \"is_anonymous\": false,\n  \"extra_info\": {\n                \"anonymous_tag\": \"TJY8\",\n                \"question_scores\": {\n                    \"listens_carefully\": 1,\n                    \"staff_cooperative\": 1,\n                    \"explains_treatment_options\": 1,\n                    \"prescribes_effective_treatment\": 1\n                },\n                \"wait_time_bucket\": \"gt_60\"\n            }   \n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
+          "raw": "{\n  \"provider_type\": \"doctor\",\n  \"provider_slug\": \"dr-md-khaled-mohsin-001efb08\",\n  \"visit_date\": \"2026-04-28T17:40:22.106Z\",\n  \"rating\": 1,\n  \"comment\": \"UPDATED TEST COMMENT\",\n  \"is_anonymous\": false,\n  \"extra_info\": {\n    \"anonymous_tag\": \"TJY8\",\n    \"question_scores\": {\n      \"listens_carefully\": 1,\n      \"staff_cooperative\": 1,\n      \"explains_treatment_options\": 1,\n      \"prescribes_effective_treatment\": 1\n    },\n    \"wait_time_bucket\": \"gt_60\"\n  }\n}",
+          "options": { "raw": { "language": "json" } }
         },
         "url": {
-          "raw": "{{baseURL}}/api/v1/reviews/24",
-          "host": [
-            "{{baseURL}}"
-          ],
-          "path": [
-            "api",
-            "v1",
-            "reviews",
-            "24"
-          ]
+          "raw": "{{baseURL}}/api/v1/reviews/{{review_id}}",
+          "host": ["{{baseURL}}"],
+          "path": ["api", "v1", "reviews", "{{review_id}}"]
         }
       },
       "response": []
@@ -295,90 +225,40 @@
           "listen": "test",
           "script": {
             "exec": [
-              "pm.test(\"Status code is 200\", function () {",
+              "pm.test('Delete review returns 200', function () {",
               "    pm.response.to.have.status(200);",
               "});",
               "",
-              "const response = pm.response.json();",
+              "console.log('Deleted review_id:', pm.collectionVariables.get('review_id'));",
               "",
-              "console.log(response);"
+              "pm.collectionVariables.unset('review_id');",
+              "pm.collectionVariables.unset('test_comment');",
+              "pm.collectionVariables.unset('accessToken');"
             ],
-            "type": "text/javascript",
-            "packages": {},
-            "requests": {}
+            "type": "text/javascript"
           }
         }
       ],
       "request": {
         "auth": {
           "type": "bearer",
-          "bearer": [
-            {
-              "key": "token",
-              "value": "{{accessToken}}",
-              "type": "string"
-            }
-          ]
+          "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
         },
         "method": "DELETE",
         "header": [],
-        "body": {
-          "mode": "raw",
-          "raw": "",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
         "url": {
-          "raw": "{{baseURL}}/api/v1/reviews/24",
-          "host": [
-            "{{baseURL}}"
-          ],
-          "path": [
-            "api",
-            "v1",
-            "reviews",
-            "24"
-          ]
+          "raw": "{{baseURL}}/api/v1/reviews/{{review_id}}",
+          "host": ["{{baseURL}}"],
+          "path": ["api", "v1", "reviews", "{{review_id}}"]
         }
       },
       "response": []
     }
   ],
-  "event": [
-    {
-      "listen": "prerequest",
-      "script": {
-        "type": "text/javascript",
-        "packages": {},
-        "requests": {},
-        "exec": [
-          ""
-        ]
-      }
-    },
-    {
-      "listen": "test",
-      "script": {
-        "type": "text/javascript",
-        "packages": {},
-        "requests": {},
-        "exec": [
-          ""
-        ]
-      }
-    }
-  ],
   "variable": [
-    {
-      "key": "baseURL",
-      "value": ""
-    },
-    {
-      "key": "accessToken",
-      "value": ""
-    }
+    { "key": "baseURL", "value": "http://159.89.231.16:3001" },
+    { "key": "accessToken", "value": "" },
+    { "key": "review_id", "value": "" },
+    { "key": "test_comment", "value": "" }
   ]
 }
