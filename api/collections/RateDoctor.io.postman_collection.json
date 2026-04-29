@@ -1,0 +1,421 @@
+{
+  "info": {
+    "_postman_id": "e778b6b9-82f0-4d05-950e-e69f031dae48",
+    "name": "RateDoctor.io",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "53717234",
+    "_collection_link": "https://go.postman.co/collection/53717234-e778b6b9-82f0-4d05-950e-e69f031dae48?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Authenticate Admin",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "const suffix = Date.now().toString();",
+              "pm.environment.set('hospitalName', `Copilot Test Hospital ${suffix}`);",
+              "pm.environment.set('updatedHospitalName', `Copilot Updated Hospital ${suffix}`);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Response contains access token', function () {",
+              "    const json = pm.response.json();",
+              "    pm.expect(json).to.have.property('access_token');",
+              "    pm.expect(json.access_token).to.be.a('string').and.not.empty;",
+              "    pm.environment.set('adminToken', json.access_token);",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"email\":\"{{adminUsername}}\",\"password\":\"{{adminPassword}}\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/auth/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "auth",
+            "login"
+          ]
+        },
+        "description": "Logs in with JSON credentials and stores the admin access token for the rest of the collection."
+      },
+      "response": []
+    },
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "Hospitals",
+          "item": [
+            {
+              "name": "Create Hospital (Admin)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status code is 201', function () {",
+                      "    pm.response.to.have.status(201);",
+                      "})",
+                      "",
+                      "pm.test('Response has hospital data', function () {",
+                      "    const json = pm.response.json();",
+                      "    pm.expect(json).to.have.property('id');",
+                      "    pm.expect(json).to.have.property('name');",
+                      "    pm.environment.set('hospitalId', json.id.toString());",
+                      "})",
+                      "",
+                      "pm.test('Response time is less than 2000ms', function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                      "})",
+                      "",
+                      "pm.test('Content-Type is application/json', function () {",
+                      "    pm.response.to.have.header('Content-Type');",
+                      "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                      "})"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{adminToken}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"name\":\"{{hospitalName}}\",\"address\":\"{{hospitalAddress}}\",\"city_id\":{{cityId}},\"country_id\":{{countryId}},\"phone\":\"{{hospitalPhone}}\"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/hospitals",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "hospitals"
+                  ]
+                },
+                "description": "Generated from cURL: curl -X POST \"{{baseUrl}}/api/v1/admin/hospitals\" -H \"Content-Type: application/json\" -H \"Authorization: Bearer {{adminToken}}\" -d '{\"name\":\"{{hospitalName}}\",\"address\":\"{{hospitalAddress}}\",\"city\":\"{{hospitalCity}}\",\"phone\":\"{{hospitalPhone}}\",\"email\":\"{{hospitalEmail}}\"}'"
+              },
+              "response": []
+            },
+            {
+              "name": "Get All Hospitals (Admin)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status code is 200', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "})",
+                      "",
+                      "pm.test('Response has items array', function () {",
+                      "    const json = pm.response.json();",
+                      "    pm.expect(json).to.have.property('items');",
+                      "    pm.expect(json.items).to.be.an('array');",
+                      "    pm.expect(json).to.have.property('total');",
+                      "})",
+                      "",
+                      "pm.test('Each hospital has required fields', function () {",
+                      "    const json = pm.response.json();",
+                      "    if (json.items.length > 0) {",
+                      "        json.items.forEach(function (hospital) {",
+                      "            pm.expect(hospital).to.have.property('id');",
+                      "            pm.expect(hospital).to.have.property('name');",
+                      "        });",
+                      "    }",
+                      "})",
+                      "",
+                      "pm.test('Response time is less than 2000ms', function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                      "})",
+                      "",
+                      "pm.test('Content-Type is application/json', function () {",
+                      "    pm.response.to.have.header('Content-Type');",
+                      "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                      "})"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{adminToken}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/hospitals",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "hospitals"
+                  ]
+                },
+                "description": "Generated from cURL: curl -X GET \"{{baseUrl}}/api/v1/admin/hospitals\" -H \"Authorization: Bearer {{adminToken}}\""
+              },
+              "response": []
+            },
+            {
+              "name": "Get Hospital Detail",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status code is 200', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "})",
+                      "",
+                      "pm.test('Response has correct hospital ID', function () {",
+                      "    const json = pm.response.json();",
+                      "    pm.expect(json).to.have.property('id');",
+                      "    pm.expect(json.id.toString()).to.equal(pm.environment.get('hospitalId').toString());",
+                      "})",
+                      "",
+                      "pm.test('Response has required fields', function () {",
+                      "    const json = pm.response.json();",
+                      "    pm.expect(json).to.have.property('name');",
+                      "    pm.expect(json).to.have.property('address');",
+                      "})",
+                      "",
+                      "pm.test('Response time is less than 2000ms', function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                      "})",
+                      "",
+                      "pm.test('Content-Type is application/json', function () {",
+                      "    pm.response.to.have.header('Content-Type');",
+                      "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                      "})"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{adminToken}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/hospitals/{{hospitalId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "hospitals",
+                    "{{hospitalId}}"
+                  ]
+                },
+                "description": "Generated from cURL: curl -X GET \"{{baseUrl}}/api/v1/admin/hospitals/{{hospitalId}}\" -H \"Authorization: Bearer {{adminToken}}\""
+              },
+              "response": []
+            },
+            {
+              "name": "Update Hospital",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status code is 200', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "})",
+                      "",
+                      "pm.test('Response has updated hospital data', function () {",
+                      "    const json = pm.response.json();",
+                      "    pm.expect(json).to.have.property('id');",
+                      "})",
+                      "",
+                      "pm.test('Hospital ID matches', function () {",
+                      "    const json = pm.response.json();",
+                      "    pm.expect(json.id.toString()).to.equal(pm.environment.get('hospitalId').toString());",
+                      "})",
+                      "",
+                      "pm.test('Response time is less than 2000ms', function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                      "})",
+                      "",
+                      "pm.test('Content-Type is application/json', function () {",
+                      "    pm.response.to.have.header('Content-Type');",
+                      "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                      "})"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{adminToken}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"name\":\"{{updatedHospitalName}}\",\"address\":\"{{updatedHospitalAddress}}\",\"city_id\":{{cityId}},\"country_id\":{{countryId}},\"phone\":\"{{updatedHospitalPhone}}\"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/hospitals/{{hospitalId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "hospitals",
+                    "{{hospitalId}}"
+                  ]
+                },
+                "description": "Generated from cURL: curl -X PUT \"{{baseUrl}}/api/v1/admin/hospitals/{{hospitalId}}\" -H \"Content-Type: application/json\" -H \"Authorization: Bearer {{adminToken}}\" -d '{\"name\":\"{{updatedHospitalName}}\",\"address\":\"{{updatedHospitalAddress}}\",\"city\":\"{{updatedHospitalCity}}\",\"phone\":\"{{updatedHospitalPhone}}\",\"email\":\"{{updatedHospitalEmail}}\"}'"
+              },
+              "response": []
+            },
+            {
+              "name": "Delete Hospital",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status code is 200 or 204', function () {",
+                      "    pm.expect(pm.response.code).to.be.oneOf([",
+                      "        200,",
+                      "        204",
+                      "    ]);",
+                      "})",
+                      "",
+                      "pm.test('Response time is less than 2000ms', function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                      "})",
+                      "",
+                      "pm.test('Hospital is deleted - verify 404 on re-fetch', function () {",
+                      "    pm.expect(pm.response.code).to.be.oneOf([",
+                      "        200,",
+                      "        204",
+                      "    ]);",
+                      "})"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{adminToken}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/hospitals/{{hospitalId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "hospitals",
+                    "{{hospitalId}}"
+                  ]
+                },
+                "description": "Generated from cURL: curl -X DELETE \"{{baseUrl}}/api/v1/admin/hospitals/{{hospitalId}}\" -H \"Authorization: Bearer {{adminToken}}\""
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
