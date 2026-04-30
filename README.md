@@ -24,7 +24,7 @@ For Swagger UI for API documents, visit: http://159.89.231.16:3001/docs
 ### Execution
 Run tests using pytest:
 ```bash
-pytest tests/ --base-url http://159.89.231.16:3000/
+pytest e2e_doctor-filters_testing.py --headed -v
 ```
 
 ## API Testing (Newman CLI)
@@ -42,5 +42,5 @@ npm test
 ```
 Or manually:
 ```bash
-newman run collections/<collection_file>.json -e environments/<environment_file>.json
+newman run RateMyDoctor.Reviews.json --verbose
 ```
