@@ -1,0 +1,50 @@
+newman
+
+RateDoctor.io API
+
+→ New Request
+  POST http://159.89.231.16:3001/api/v1/auth/login [200 OK, 603B, 414ms]
+  √  Login request responded
+  √  Access token exists
+
+→ New Request
+  GET http://159.89.231.16:3001/api/v1/admin/reviews [200 OK, 3.71kB, 335ms]
+  √  Request successful
+
+→ New Request
+  PUT http://159.89.231.16:3001/api/v1/admin/reviews/14/pending [200 OK, 170B, 99ms]
+  √  PUT request successful
+
+→ New Request
+  PUT http://159.89.231.16:3001/api/v1/admin/providers/8186/reject?provider_type=doctor [200 OK, 164B, 370ms]
+  √  PUT request successful
+
+→ New Request
+  GET http://159.89.231.16:3001/api/v1/admin/reviews/pending [200 OK, 167B, 41ms]
+  √  Request successful
+
+→ New Request
+  DELETE http://159.89.231.16:3001/api/v1/admin/reviews/14 [404 Not Found, 161B, 33ms]
+  ┌
+  │ 'Skipping JSON parse because response was:', 404
+  └
+
+┌─────────────────────────┬────────────────────┬────────────────────┐
+│                         │           executed │             failed │
+├─────────────────────────┼────────────────────┼────────────────────┤
+│              iterations │                  1 │                  0 │
+├─────────────────────────┼────────────────────┼────────────────────┤
+│                requests │                  6 │                  0 │
+├─────────────────────────┼────────────────────┼────────────────────┤
+│            test-scripts │                 12 │                  0 │
+├─────────────────────────┼────────────────────┼────────────────────┤
+│      prerequest-scripts │                  7 │                  0 │
+├─────────────────────────┼────────────────────┼────────────────────┤
+│              assertions │                  6 │                  0 │
+├─────────────────────────┴────────────────────┴────────────────────┤
+│ total run duration: 1685ms                                        │
+├───────────────────────────────────────────────────────────────────┤
+│ total data received: 4.21kB (approx)                              │
+├───────────────────────────────────────────────────────────────────┤
+│ average response time: 215ms [min: 33ms, max: 414ms, s.d.: 160ms] │
+└───────────────────────────────────────────────────────────────────┘
