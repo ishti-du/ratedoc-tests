@@ -5,11 +5,9 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
+    "test": "npm run test:api",
     "test:api": "newman run collections/Sam_Shtrambrand_facilities.postman_collection.json -e environments/Sam_Shtrambrand_staging.postman_environment.json",
-    "test:api:verbose": "newman run collections/Sam_Shtrambrand_facilities.postman_collection.json -e environments/Sam_Shtrambrand_staging.postman_environment.json --verbose",
-    "test:e2e": "npm --prefix ../e2e run test:e2e",
-    "test:e2e:headed": "npm --prefix ../e2e run test:e2e:headed",
-    "test:e2e:debug": "npm --prefix ../e2e run test:e2e:debug"
+    "test:api:verbose": "newman run collections/Sam_Shtrambrand_facilities.postman_collection.json -e environments/Sam_Shtrambrand_staging.postman_environment.json --verbose"
   },
   "devDependencies": {
     "newman": "^6.2.1"
