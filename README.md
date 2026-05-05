@@ -8,6 +8,9 @@ For Swagger UI for API documents, visit: http://159.89.231.16:3001/docs
 - `e2e/`: End-to-end UI tests using Playwright (Python).
 - `api/`: API tests using Postman/Newman (Node.js).
 
+### Download
+download the github repo and open a terminal at the folder
+
 ## UI Testing (Playwright Python)
 ### Setup
 1. Create and activate a virtual environment:
@@ -19,6 +22,7 @@ For Swagger UI for API documents, visit: http://159.89.231.16:3001/docs
 2. Install dependencies:
    ```bash
    pip install -r requirements.txt
+   playwright install-deps
    playwright install
    ```
 
