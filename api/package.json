@@ -1,13 +1,19 @@
 {
   "name": "ratedoc-api-tests",
   "version": "1.0.0",
-  "description": "API Tests using Newman CLI",
+  "description": "Newman API tests for RateDoctor",
+  "type": "module",
   "main": "index.js",
   "scripts": {
-    "test": "newman run collections/Ian_Grinarml_RateDoc_Cities.postman_collection.json -e environments/Ian_Grinarml_Staging.postman_environment.json",
-    "test:cli": "newman run collections/Ian_Grinarml_RateDoc_Cities.postman_collection.json -e environments/Ian_Grinarml_Staging.postman_environment.json"
+    "test": "npm run test:api",
+    "test:api": "npm run test:api:facilities && npm run test:api:cities",
+    "test:api:facilities": "newman run collections/Sam_Shtrambrand_facilities.postman_collection.json -e environments/Sam_Shtrambrand_staging.postman_environment.json",
+    "test:api:facilities:verbose": "newman run collections/Sam_Shtrambrand_facilities.postman_collection.json -e environments/Sam_Shtrambrand_staging.postman_environment.json --verbose",
+    "test:api:cities": "newman run collections/Ian_Grinarml_RateDoc_Cities.postman_collection.json -e environments/Ian_Grinarml_Staging.postman_environment.json",
+    "test:api:cities:verbose": "newman run collections/Ian_Grinarml_RateDoc_Cities.postman_collection.json -e environments/Ian_Grinarml_Staging.postman_environment.json --verbose",
+    "test:cli": "npm run test:api:cities"
   },
   "devDependencies": {
-    "newman": "^6.0.0"
+    "newman": "^6.2.1"
   }
 }
