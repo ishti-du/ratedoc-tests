@@ -37,9 +37,33 @@ def test_doctor_hospital_dropdown_flow(page: Page):
     dropdown = page.locator("[data-radix-popper-content-wrapper]")
     dropdown.wait_for(state="visible")
 
-    cardio_option = dropdown.get_by_text("Cardiology", exact=False)
-    expect(cardio_option).to_be_visible()
-    cardio_option.click(force=True)
+    denist_option = dropdown.get_by_text("Dentist", exact=False)
+    expect(denist_option).to_be_visible()
+    denist_option.click(force=True)
+
+    page.locator("input").first.press("Enter")
+
+    page.wait_for_timeout(1000)
+
+    page_text = page.locator("body").inner_text()
+
+    assert "No doctors found matching your criteria" in page_text
+
+    page.locator("button:has-text('Clear Filters')").first.click()
+
+    # Search doctor
+    page.locator("nav").get_by_text("Doctors", exact=True).click()
+    page.locator("input").first.fill(doctor_name)
+
+    # Search doctor by location
+    page.locator("button:has-text('Location')").first.click()
+
+    dropdown = page.locator("[data-radix-popper-content-wrapper]")
+    dropdown.wait_for(state="visible")
+
+    dhaka_option = dropdown.get_by_text("Dhaka", exact=False)
+    expect(dhaka_option).to_be_visible()
+    dhaka_option.click(force=True)
 
     # Click doctor result
     page.get_by_text(doctor_name, exact=False).first.click()
