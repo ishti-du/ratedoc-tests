@@ -8,6 +8,43 @@
   },
   "item": [
     {
+      "name": "Get Review - For Testing",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "resposne = pm.response.json();\r",
+              "review = resposne.items[0];\r",
+              "if (review) {\r",
+              "    pm.environment.set(\"review_id\", review.id);\r",
+              "    console.log(\"Captured Review ID:\", review.id);\r",
+              "}"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/v1/reviews",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "reviews"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
       "name": "Create Review Vote - Like",
       "event": [
         {
@@ -64,80 +101,6 @@
         "body": {
           "mode": "raw",
           "raw": "{\n  \"review_id\": {{review_id}},\n  \"vote_type\": \"like\"\n}"
-        },
-        "url": {
-          "raw": "{{base_url}}/api/v1/reviews/{{review_id}}/vote",
-          "host": [
-            "{{base_url}}"
-          ],
-          "path": [
-            "api",
-            "v1",
-            "reviews",
-            "{{review_id}}",
-            "vote"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Create Review Vote - Dislike",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test(\"Status code is 200 or 201\", function () {",
-              "  pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
-              "});",
-              "",
-              "pm.test(\"Response contains success message\", function () {",
-              "    const jsonData = pm.response.json();",
-              "    pm.expect(jsonData).to.have.property(\"message\");",
-              "    pm.expect(jsonData.message).to.be.a(\"string\");",
-              "});",
-              "",
-              "pm.test(\"Response time is less than 500ms\", function () {",
-              "    pm.expect(pm.response.responseTime).to.be.below(500);",
-              "});",
-              "",
-              ""
-            ],
-            "type": "text/javascript",
-            "packages": {},
-            "requests": {}
-          }
-        },
-        {
-          "listen": "prerequest",
-          "script": {
-            "exec": [
-              ""
-            ],
-            "type": "text/javascript",
-            "packages": {},
-            "requests": {}
-          }
-        }
-      ],
-      "protocolProfileBehavior": {
-        "followAuthorizationHeader": true,
-        "disableUrlEncoding": false,
-        "followRedirects": true,
-        "strictSSL": false
-      },
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"review_id\": {{review_id}},\n  \"vote_type\": \"dislike\"\n}"
         },
         "url": {
           "raw": "{{base_url}}/api/v1/reviews/{{review_id}}/vote",
@@ -230,6 +193,80 @@
               "key": "vote_type",
               "value": "like"
             }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create Review Vote - Dislike",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200 or 201\", function () {",
+              "  pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+              "});",
+              "",
+              "pm.test(\"Response contains success message\", function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property(\"message\");",
+              "    pm.expect(jsonData.message).to.be.a(\"string\");",
+              "});",
+              "",
+              "pm.test(\"Response time is less than 500ms\", function () {",
+              "    pm.expect(pm.response.responseTime).to.be.below(500);",
+              "});",
+              "",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "protocolProfileBehavior": {
+        "followAuthorizationHeader": true,
+        "disableUrlEncoding": false,
+        "followRedirects": true,
+        "strictSSL": false
+      },
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"review_id\": {{review_id}},\n  \"vote_type\": \"dislike\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/reviews/{{review_id}}/vote",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "reviews",
+            "{{review_id}}",
+            "vote"
           ]
         }
       },
@@ -390,6 +427,198 @@
       "response": []
     },
     {
+      "name": "Get City - For Reject Testing",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const response = pm.response.json();\r",
+              "\r",
+              "const city = response[0];\r",
+              "\r",
+              "if (city) {\r",
+              "    pm.environment.set(\"city_id\", city.id);\r",
+              "    console.log(\"Captured City ID:\", city.id);\r",
+              "}"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/v1/cities",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "cities"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create Diagnostic Center - For Reject Testing",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200 or 201\", function () {\r",
+              "  pm.expect(pm.response.code).to.be.oneOf([200, 201]);\r",
+              "});\r",
+              "\r",
+              "const response = pm.response.json();\r",
+              "\r",
+              "if (response) {\r",
+              "    pm.environment.set(\"center_slug\", response.slug)\r",
+              "}"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "protocolProfileBehavior": {
+        "followAuthorizationHeader": true
+      },
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"name\": \"Evan - Test Center\",\r\n  \"address\": \"Test Road\",\r\n  \"city_id\": {{cityId}},\r\n  \"country_id\": 1,\r\n  \"phone\": \"123\",\r\n  \"website\": \"Test.com\",\r\n  \"extra_info\": {},\r\n  \"photo_url\": \"\",\r\n  \"google_map_link\": \"\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/diagnostic-centers",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "diagnostic-centers"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Reject Diagnostic Center",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200 or 204\", function () {\r",
+              "  pm.expect(pm.response.code).to.be.oneOf([200, 204]);\r",
+              "});\r",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "protocolProfileBehavior": {
+        "followAuthorizationHeader": true
+      },
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/diagnostic-centers/{{center_slug}}/reject",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "diagnostic-centers",
+            "{{center_slug}}",
+            "reject"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create Diagnostic Center - For Delete Testing",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200 or 201\", function () {\r",
+              "  pm.expect(pm.response.code).to.be.oneOf([200, 201]);\r",
+              "});\r",
+              "\r",
+              "const response = pm.response.json();\r",
+              "\r",
+              "if (response) {\r",
+              "    pm.environment.set(\"center_slug\", response.slug)\r",
+              "}"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "protocolProfileBehavior": {
+        "followAuthorizationHeader": true
+      },
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"name\": \"Evan - Test Center\",\r\n  \"address\": \"Test Road\",\r\n  \"city_id\": {{cityId}},\r\n  \"country_id\": 1,\r\n  \"phone\": \"123\",\r\n  \"website\": \"Test.com\",\r\n  \"extra_info\": {},\r\n  \"photo_url\": \"\",\r\n  \"google_map_link\": \"\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/diagnostic-centers",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "diagnostic-centers"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
       "name": "Delete Diagnostic Center",
       "event": [
         {
@@ -432,7 +661,7 @@
           }
         },
         "url": {
-          "raw": "{{base_url}}/api/v1/diagnostic-centers/{{slug}}",
+          "raw": "{{base_url}}/api/v1/diagnostic-centers/{{center_slug}}",
           "host": [
             "{{base_url}}"
           ],
@@ -440,64 +669,7 @@
             "api",
             "v1",
             "diagnostic-centers",
-            "{{slug}}"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Reject Diagnostic Center",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test(\"Status code is 200 or 204\", function () {\r",
-              "  pm.expect(pm.response.code).to.be.oneOf([200, 204]);\r",
-              "});\r",
-              "\r",
-              "pm.test(\"Response contains success message\", function () {\r",
-              "    const jsonData = pm.response.json();\r",
-              "    pm.expect(jsonData).to.have.property(\"message\");\r",
-              "    pm.expect(jsonData.message).to.be.a(\"string\");\r",
-              "});\r",
-              "\r",
-              "pm.test(\"Response time is less than 500ms\", function () {\r",
-              "    pm.expect(pm.response.responseTime).to.be.below(500);\r",
-              "});"
-            ],
-            "type": "text/javascript",
-            "packages": {},
-            "requests": {}
-          }
-        }
-      ],
-      "protocolProfileBehavior": {
-        "followAuthorizationHeader": true
-      },
-      "request": {
-        "method": "PUT",
-        "header": [],
-        "body": {
-          "mode": "raw",
-          "raw": "",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "{{base_url}}/api/v1/diagnostic-centers/{{slug}}",
-          "host": [
-            "{{base_url}}"
-          ],
-          "path": [
-            "api",
-            "v1",
-            "diagnostic-centers",
-            "{{slug}}"
+            "{{center_slug}}"
           ]
         }
       },
@@ -507,6 +679,26 @@
   "auth": {
     "type": "oauth2",
     "oauth2": [
+      {
+        "key": "accessTokenUrl",
+        "value": "{{base_url}}/api/v1/auth/token",
+        "type": "string"
+      },
+      {
+        "key": "password",
+        "value": "{{password}}",
+        "type": "string"
+      },
+      {
+        "key": "username",
+        "value": "{{username}}",
+        "type": "string"
+      },
+      {
+        "key": "grant_type",
+        "value": "password_credentials",
+        "type": "string"
+      },
       {
         "key": "addTokenTo",
         "value": "header",
