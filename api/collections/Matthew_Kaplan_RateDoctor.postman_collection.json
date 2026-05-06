@@ -1,0 +1,1336 @@
+{
+  "info": {
+    "_postman_id": "3c5c7dd6-eb97-4ebc-b223-51ce1ae11843",
+    "name": "Rate Doctor",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "53737257",
+    "_collection_link": "https://go.postman.co/collection/53737257-3c5c7dd6-eb97-4ebc-b223-51ce1ae11843?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Create User",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 201\", function () \r",
+              "{\r",
+              "    pm.response.to.have.status(201);\r",
+              "});\r",
+              "let jsonData = pm.response.json();\r",
+              "let newEmail = pm.environment.get(\"newEmail\")\r",
+              "let newName = pm.environment.get(\"newName\")\r",
+              "let newPassword = pm.environment.get(\"newPassword\")\r",
+              "pm.test(\"User info matches\", function()\r",
+              "{\r",
+              "    pm.expect(jsonData.email).to.eql(newEmail);\r",
+              "    pm.expect(pm.response.json().name).to.eql(newName);\r",
+              "});\r",
+              "if (jsonData.email === newEmail)\r",
+              "{\r",
+              "    pm.environment.set(\"userEmail\", newEmail);\r",
+              "};\r",
+              "if (jsonData.name === newName)\r",
+              "{\r",
+              "    pm.environment.set(\"userName\", newName);\r",
+              "};\r",
+              "pm.environment.set(\"userPassword\", newPassword);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "var next = Date.now();\r",
+              "var newEmail = \"test_\" + next + \"@example.com\";\r",
+              "var newName = \"test_\" + next;\r",
+              "var newPassword = \"test_\" + next + \"!@#\";\r",
+              "pm.environment.set(\"newEmail\", newEmail);\r",
+              "pm.environment.set(\"newName\", newName);\r",
+              "pm.environment.set(\"newPassword\", newPassword);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"email\": \"{{newEmail}}\",\r\n    \"password\": \"{{newPassword}}\",\r\n    \"name\": \"{{newName}}\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/auth/register",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "auth",
+            "register"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create User Copy",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 201\", function () \r",
+              "{\r",
+              "    pm.response.to.have.status(201);\r",
+              "});\r",
+              "let jsonData = pm.response.json();\r",
+              "let newEmail = pm.environment.get(\"newEmail\")\r",
+              "let newName = pm.environment.get(\"newName\")\r",
+              "let newPassword = pm.environment.get(\"newPassword\")\r",
+              "pm.test(\"User info matches\", function()\r",
+              "{\r",
+              "    pm.expect(jsonData.email).to.eql(newEmail);\r",
+              "    pm.expect(pm.response.json().name).to.eql(newName);\r",
+              "});\r",
+              "if (jsonData.email === newEmail)\r",
+              "{\r",
+              "    pm.environment.set(\"user2Email\", newEmail);\r",
+              "};\r",
+              "if (jsonData.name === newName)\r",
+              "{\r",
+              "    pm.environment.set(\"user2Name\", newName);\r",
+              "};\r",
+              "pm.environment.set(\"user2Password\", newPassword);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "var next = Date.now();\r",
+              "var newEmail = \"test_\" + next + \"@example.com\";\r",
+              "var newName = \"test_\" + next;\r",
+              "var newPassword = \"test_\" + next + \"!@#\";\r",
+              "pm.environment.set(\"newEmail\", newEmail);\r",
+              "pm.environment.set(\"newName\", newName);\r",
+              "pm.environment.set(\"newPassword\", newPassword);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"email\": \"{{newEmail}}\",\r\n    \"password\": \"{{newPassword}}\",\r\n    \"name\": \"{{newName}}\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/auth/register",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "auth",
+            "register"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () \r",
+              "{\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "let jsonData = pm.response.json();\r",
+              "if (jsonData.access_token)\r",
+              "{\r",
+              "    pm.environment.set(\"token\", jsonData.access_token)\r",
+              "}\r",
+              "if (jsonData.refresh_token)\r",
+              "{\r",
+              "    pm.environment.set(\"refreshToken\", jsonData.refresh_token)\r",
+              "}"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"email\": \"{{userEmail}}\",\r\n  \"password\": \"{{userPassword}}\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/auth/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "auth",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "User Profile Info for Logged In User",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () \r",
+              "{\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "let jsonData = pm.response.json();\r",
+              "//Checks that all user info is a string\r",
+              "pm.test(\"User info found and is string\", function () \r",
+              "{\r",
+              "    pm.expect(jsonData.id).to.be.a(\"string\");\r",
+              "    pm.expect(jsonData.email).to.be.a(\"string\");\r",
+              "    pm.expect(jsonData.name).to.be.a(\"string\");\r",
+              "    pm.expect(jsonData.role).to.be.a(\"string\");\r",
+              "    pm.expect(jsonData.created_at).to.be.a(\"string\");\r",
+              "    pm.expect(jsonData.updated_at).to.be.a(\"string\");\r",
+              "});\r",
+              "//checks that user email matches\r",
+              "pm.test(\"User email matches, correct user info found\", function()\r",
+              "{\r",
+              "    pm.expect(jsonData.email).to.equal(pm.environment.get(\"userEmail\"));\r",
+              "});\r",
+              "//Checks profile for URL or null\r",
+              "//Separate because profile picture is optional\r",
+              "pm.test(\"Optional Profile picture URL null or string\", function () \r",
+              "{\r",
+              "    if (jsonData.profile_picture_url !== null) \r",
+              "    {\r",
+              "        pm.expect(jsonData.profile_picture_url).to.be.a(\"string\");\r",
+              "    }\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/users/me",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "users",
+            "me"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "User Profile Info for no provided user",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 401\", function () \r",
+              "{\r",
+              "    pm.response.to.have.status(401);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/users/me",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "users",
+            "me"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "User Profile Info for invalid token",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 401\", function () \r",
+              "{\r",
+              "    pm.response.to.have.status(401);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{badToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/users/me",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "users",
+            "me"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Update User Profile with invalid email",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 422\", function () \r",
+              "{\r",
+              "    pm.response.to.have.status(422);\r",
+              "});\r",
+              "pm.test(\"Error message includes 'value is not a valid email address' message\", function ()\r",
+              "{\r",
+              "    pm.expect(pm.response.json().detail[0].msg).to.include(\"value is not a valid email address\");\r",
+              "});\r",
+              "\r",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"name\": \"None\",\r\n    \"email\": \"fakemail\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/users/me",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "users",
+            "me"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Update User Profile with Existing email",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 400\", function () \r",
+              "{\r",
+              "    pm.response.to.have.status(400);\r",
+              "});\r",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"name\": \"None\",\r\n    \"email\": \"{{user2Email}}\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/users/me",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "users",
+            "me"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Update User Profile Copy",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "var next = Date.now();\r",
+              "var newEmail = \"test_\" + next + \"@example.com\";\r",
+              "var newName = \"test_\" + next;\r",
+              "pm.environment.set(\"newEmail\", newEmail);\r",
+              "pm.environment.set(\"newName\", newName);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 401\", function () \r",
+              "{\r",
+              "    pm.response.to.have.status(401);\r",
+              "});\r",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"name\": \"{{newName}}\",\r\n    \"email\": \"{{newEmail}}\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/users/me",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "users",
+            "me"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Update User Profile",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "var next = Date.now();\r",
+              "var newEmail = \"test_\" + next + \"@example.com\";\r",
+              "var newName = \"test_\" + next;\r",
+              "pm.environment.set(\"newEmail\", newEmail);\r",
+              "pm.environment.set(\"newName\", newName);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () \r",
+              "{\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "let jsonData = pm.response.json();\r",
+              "\r",
+              "pm.test(\"Updated data still returns strings\", function () \r",
+              "{\r",
+              "    pm.expect(jsonData.id).to.be.a(\"string\");\r",
+              "    pm.expect(jsonData.email).to.be.a(\"string\");\r",
+              "    pm.expect(jsonData.name).to.be.a(\"string\");\r",
+              "    pm.expect(jsonData.role).to.be.a(\"string\");\r",
+              "    pm.expect(jsonData.created_at).to.be.a(\"string\");\r",
+              "    pm.expect(jsonData.updated_at).to.be.a(\"string\");\r",
+              "});\r",
+              "let newEmail = pm.environment.get(\"newEmail\")\r",
+              "let newName = pm.environment.get(\"newName\")\r",
+              "pm.test(\"Email and username are updated to new values\", function()\r",
+              "{\r",
+              "    pm.expect(jsonData.email).to.equal(newEmail);\r",
+              "    pm.expect(jsonData.name).to.equal(newName);\r",
+              "});\r",
+              "\r",
+              "if (jsonData.email === newEmail)\r",
+              "{\r",
+              "    pm.environment.set(\"userEmail\", newEmail);\r",
+              "};\r",
+              "if (jsonData.name === newName)\r",
+              "{\r",
+              "    pm.environment.set(\"userName\", newName);\r",
+              "};\r",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"name\": \"{{newName}}\",\r\n    \"email\": \"{{newEmail}}\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/users/me",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "users",
+            "me"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Update User Profile Picture",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Profile picture URL is updated\", function () {\r",
+              "    var jsonData = pm.response.json();\r",
+              "    pm.expect(jsonData.profile_picture_url).to.be.a('string');\r",
+              "    pm.expect(jsonData.profile_picture_url.length).to.be.greaterThan(0);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "file",
+              "type": "file",
+              "uuid": "a430abf0-4f97-4cd1-8c37-206139359d77",
+              "src": "collections/Matthew_Kaplan_Test_ID_Photo.png"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/users/upload-profile-picture",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "users",
+            "upload-profile-picture"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Update User Profile Picture with invalid file type",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 400\", function () {\r",
+              "    pm.response.to.have.status(400);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "file",
+              "type": "file",
+              "uuid": "a430abf0-4f97-4cd1-8c37-206139359d77",
+              "src": "collections/Matthew_Kaplan_Test_invalidfiletype.txt"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/users/upload-profile-picture",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "users",
+            "upload-profile-picture"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Update User Profile Picture while not authenticated",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 401\", function () {\r",
+              "    pm.response.to.have.status(401);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "file",
+              "type": "file",
+              "uuid": "a430abf0-4f97-4cd1-8c37-206139359d77",
+              "src": "collections/Matthew_Kaplan_Test_ID_Photo.png"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/users/upload-profile-picture",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "users",
+            "upload-profile-picture"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Update Profile Picture with no file",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 422\", function () {\r",
+              "    pm.response.to.have.status(422);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "file",
+              "type": "file",
+              "uuid": "a430abf0-4f97-4cd1-8c37-206139359d77",
+              "src": "collections/Matthew_Kaplan_Test_ID_Photo.png",
+              "disabled": true
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/users/upload-profile-picture",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "users",
+            "upload-profile-picture"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Update User Password while not authenticated",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "var next = Date.now();\r",
+              "var newPassword = \"test_\" + next;\r",
+              "pm.environment.set(\"newPassword\", newPassword);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 401\", function () \r",
+              "{\r",
+              "    pm.response.to.have.status(401);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"current_password\": \"{{userPassword}}\",\r\n  \"new_password\": \"{{newPassword}}\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/users/change-password",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "users",
+            "change-password"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Update User Password",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "var next = Date.now();\r",
+              "var newPassword = \"test_\" + next;\r",
+              "pm.environment.set(\"newPassword\", newPassword);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () \r",
+              "{\r",
+              "    pm.response.to.have.status(200);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"current_password\": \"{{userPassword}}\",\r\n  \"new_password\": \"{{newPassword}}\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/users/change-password",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "users",
+            "change-password"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Update User Password with Old Password",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 400\", function () \r",
+              "{\r",
+              "    pm.response.to.have.status(400);\r",
+              "});\r",
+              "var requestBody = JSON.parse(pm.request.body.raw);\r",
+              "pm.environment.set(\"userPassword\", requestBody.new_password);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"current_password\": \"{{userPassword}}\",\r\n  \"new_password\": \"{{newPassword}}\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/users/change-password",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "users",
+            "change-password"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Update User Password With Invalid Password",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 400\", function () \r",
+              "{\r",
+              "    pm.response.to.have.status(422);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"current_password\": \"{{userPassword}}\",\r\n  \"new_password\": \"\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/users/change-password",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "users",
+            "change-password"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Login With New Password",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () \r",
+              "{\r",
+              "    pm.response.to.have.status(200);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"email\": \"{{userEmail}}\",\r\n  \"password\": \"{{userPassword}}\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/auth/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "auth",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": ""
+    },
+    {
+      "key": "token",
+      "value": ""
+    }
+  ]
+}
