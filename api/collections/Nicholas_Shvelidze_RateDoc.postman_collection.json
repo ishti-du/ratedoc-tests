@@ -1,0 +1,298 @@
+{
+  "info": {
+    "_postman_id": "d53ccc2b-d286-4537-a09a-574cbbf9cf2b",
+    "name": "RateDoc API Tests - Nick Diagnostic Centers",
+    "description": "API tests for Nick's assigned Team 2 Admin Diagnostic Center endpoints.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "53715635",
+    "_collection_link": "https://go.postman.co/collection/53715635-d53ccc2b-d286-4537-a09a-574cbbf9cf2b?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "1. Admin Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Login request completed', function () {",
+              "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+              "});",
+              "",
+              "let json = pm.response.json();",
+              "let token = json.access_token || json.token || json.accessToken || json.data?.access_token || json.data?.token;",
+              "",
+              "pm.test('Token exists', function () {",
+              "    pm.expect(token).to.exist;",
+              "});",
+              "",
+              "if (token) {",
+              "    pm.environment.set('token', token);",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"admin@ratedoc.com\",\n  \"password\": \"DeyaJabeNa!023\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/auth/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "auth",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "2. Create Diagnostic Center",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Create diagnostic center status is success', function () {",
+              "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+              "});",
+              "",
+              "let json = pm.response.json();",
+              "let center = json.data || json;",
+              "let id = center.id || center._id || center.diagnostic_center_id;",
+              "",
+              "pm.test('Created diagnostic center has ID', function () {",
+              "    pm.expect(id).to.exist;",
+              "});",
+              "",
+              "if (id) {",
+              "    pm.environment.set('diagnosticCenterId', id);",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Nick Diagnostic Center {{$timestamp}}\",\n  \"address\": \"123 Nick Test Street\",\n  \"city_id\": 1,\n  \"country_id\": 1,\n  \"phone\": \"1234567890\",\n  \"website\": \"https://nick-test-center.com\",\n  \"photo_url\": \"https://example.com/photo.jpg\",\n  \"google_map_link\": \"https://maps.google.com/?q=Nick+Diagnostic+Center\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/admin/diagnostic-centers",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "admin",
+            "diagnostic-centers"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "3. Get All Diagnostic Centers",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Get all diagnostic centers returns success', function () {",
+              "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+              "});",
+              "",
+              "pm.test('Response is JSON', function () {",
+              "    pm.response.to.be.json;",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/admin/diagnostic-centers",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "admin",
+            "diagnostic-centers"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "4. Get Diagnostic Center Detail",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Get diagnostic center detail returns success', function () {",
+              "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+              "});",
+              "",
+              "pm.test('Detail response is JSON', function () {",
+              "    pm.response.to.be.json;",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/admin/diagnostic-centers/{{diagnosticCenterId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "admin",
+            "diagnostic-centers",
+            "{{diagnosticCenterId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "5. Update Diagnostic Center",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Update diagnostic center returns success', function () {",
+              "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+              "});",
+              "",
+              "pm.test('Update response is JSON', function () {",
+              "    pm.response.to.be.json;",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Nick Diagnostic Center Updated {{$timestamp}}\",\n  \"address\": \"456 Updated Test Avenue\",\n  \"phone\": \"0987654321\",\n  \"email\": \"nick.updated{{$timestamp}}@test.com\",\n  \"city_id\": 1,\n  \"description\": \"Diagnostic center updated by Nick API tests\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/admin/diagnostic-centers/{{diagnosticCenterId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "admin",
+            "diagnostic-centers",
+            "{{diagnosticCenterId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "6. Delete Diagnostic Center",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Delete diagnostic center returns success', function () {",
+              "    pm.expect(pm.response.code).to.be.oneOf([200, 202, 204]);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/admin/diagnostic-centers/{{diagnosticCenterId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "admin",
+            "diagnostic-centers",
+            "{{diagnosticCenterId}}"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}

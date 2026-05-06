@@ -1,0 +1,384 @@
+{
+  "info": {
+    "_postman_id": "f1e2d3c4-b5a6-7890-cdef-012345678901",
+    "name": "Gabriel_Silva_RateDoc_Admin",
+    "description": "Team 1 admin API tests for RateDoc (http://159.89.231.16:3001).\nEndpoints covered:\n  PUT /api/v1/admin/reviews/{id}/approve\n  PUT /api/v1/admin/reviews/{id}/reject\n  GET /api/v1/admin/users\n  POST /api/v1/admin/users\n  PUT /api/v1/admin/users/{id}/role\n\nRun order: Setup folder first, then Admin – Reviews, then Admin – Users.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "gabriel_silva"
+  },
+  "item": [
+    {
+      "name": "Setup",
+      "description": "Must run first. Logs in as admin and seeds env variables used by every test.",
+      "item": [
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Authenticate as admin and save token for all downstream requests",
+                  "pm.test('Login succeeds (200)', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "pm.test('Response contains access_token', function () {",
+                  "    pm.expect(json).to.have.property('access_token');",
+                  "});",
+                  "",
+                  "if (json.access_token) {",
+                  "    pm.environment.set('auth_token', json.access_token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@ratedoc.com\",\n  \"password\": \"DeyaJabeNa!023\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "login"]
+            },
+            "description": "Authenticates as admin and stores auth_token in the environment."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Review ID for Tests (setup)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Pull the first review from the admin list and save its id.",
+                  "// This review is used by the Approve and Reject tests.",
+                  "const json  = pm.response.json();",
+                  "const items = json.items || [];",
+                  "",
+                  "if (items.length > 0) {",
+                  "    pm.environment.set('review_id', String(items[0].id));",
+                  "    console.log('review_id set to:', items[0].id, '| current status:', items[0].status);",
+                  "} else {",
+                  "    console.warn('No reviews found – Approve/Reject tests will fail.');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{auth_token}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/reviews",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "reviews"]
+            },
+            "description": "Fetches the reviews list and saves the first review id for Approve and Reject tests."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Admin – Reviews",
+      "item": [
+        {
+          "name": "Approve Review",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// PUT /api/v1/admin/reviews/{id}/approve",
+                  "console.log('Approve Review response:', JSON.stringify(pm.response.json()));",
+                  "",
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response contains review id', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('id');",
+                  "});",
+                  "",
+                  "pm.test('Response confirms review was approved', function () {",
+                  "    const json = pm.response.json();",
+                  "    // API returns { message, id } not a status field",
+                  "    const msg = (json.message || '').toLowerCase();",
+                  "    pm.expect(msg).to.include('approved');",
+                  "});",
+                  "",
+                  "pm.test('Response time is under 2000ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{auth_token}}", "type": "string" }]
+            },
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/reviews/{{review_id}}/approve",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "reviews", "{{review_id}}", "approve"]
+            },
+            "description": "Approves a review. Admin-only. review_id set by Setup."
+          },
+          "response": []
+        },
+        {
+          "name": "Reject Review",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// PUT /api/v1/admin/reviews/{id}/reject",
+                  "// Runs after Approve, so the review is currently 'approved'.",
+                  "console.log('Reject Review response:', JSON.stringify(pm.response.json()));",
+                  "",
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response contains review id', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('id');",
+                  "});",
+                  "",
+                  "pm.test('Response confirms review was rejected', function () {",
+                  "    const json = pm.response.json();",
+                  "    // API returns { message, id } not a status field",
+                  "    const msg = (json.message || '').toLowerCase();",
+                  "    pm.expect(msg).to.include('rejected');",
+                  "});",
+                  "",
+                  "pm.test('Response time is under 2000ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{auth_token}}", "type": "string" }]
+            },
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/reviews/{{review_id}}/reject",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "reviews", "{{review_id}}", "reject"]
+            },
+            "description": "Rejects a review. Admin-only. Uses the same review_id as Approve Review."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Admin – Users",
+      "item": [
+        {
+          "name": "Get Users",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// GET /api/v1/admin/users",
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response is an array or paginated object', function () {",
+                  "    const json = pm.response.json();",
+                  "    const isArray = Array.isArray(json);",
+                  "    const isPaginated = json && Array.isArray(json.items);",
+                  "    pm.expect(isArray || isPaginated).to.be.true;",
+                  "});",
+                  "",
+                  "pm.test('Each user has id and email fields', function () {",
+                  "    const json  = pm.response.json();",
+                  "    const users = Array.isArray(json) ? json : (json.items || []);",
+                  "    if (users.length > 0) {",
+                  "        pm.expect(users[0]).to.have.property('id');",
+                  "        pm.expect(users[0]).to.have.property('email');",
+                  "    }",
+                  "});",
+                  "",
+                  "pm.test('Response time is under 2000ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{auth_token}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/users",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "users"]
+            },
+            "description": "Returns all users. Admin-only."
+          },
+          "response": []
+        },
+        {
+          "name": "Create User",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Generate a unique email using a timestamp so re-runs never hit 409 Conflict",
+                  "const timestamp = Date.now();",
+                  "pm.environment.set('test_user_email', 'testuser_auto_' + timestamp + '@ratedoc.com');"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// POST /api/v1/admin/users",
+                  "// Saves the new user's id for the Update User Role test.",
+                  "console.log('Create User response:', JSON.stringify(pm.response.json()));",
+                  "",
+                  "pm.test('Status code is 200 or 201', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});",
+                  "",
+                  "pm.test('Response contains user id and email', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('id');",
+                  "    pm.expect(json).to.have.property('email');",
+                  "});",
+                  "",
+                  "pm.test('Response time is under 2000ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "});",
+                  "",
+                  "// Save new user id so Update User Role can reference it",
+                  "const json = pm.response.json();",
+                  "if (json && json.id) {",
+                  "    pm.environment.set('test_user_id', String(json.id));",
+                  "    console.log('test_user_id set to:', json.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{auth_token}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{test_user_email}}\",\n  \"password\": \"TestPass123!\",\n  \"name\": \"Auto Test User\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/users",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "users"]
+            },
+            "description": "Creates a new user via the admin endpoint. Saves the user id for Update User Role."
+          },
+          "response": []
+        },
+        {
+          "name": "Update User Role",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// PUT /api/v1/admin/users/{id}/role",
+                  "console.log('Update Role response:', JSON.stringify(pm.response.json()));",
+                  "",
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response contains user id', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('id');",
+                  "});",
+                  "",
+                  "pm.test('Response time is under 2000ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "});",
+                  "",
+                  "// Clean up: clear test_user_id after the role update",
+                  "pm.environment.unset('test_user_id');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{auth_token}}", "type": "string" }]
+            },
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"user\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/users/{{test_user_id}}/role",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "users", "{{test_user_id}}", "role"]
+            },
+            "description": "Updates the role of the user created by Create User. Admin-only."
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://159.89.231.16:3001",
+      "type": "default"
+    }
+  ]
+}
