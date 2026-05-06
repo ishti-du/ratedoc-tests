@@ -1,0 +1,13 @@
+{
+  "name": "ratedoc-api-tests",
+  "version": "1.0.0",
+  "description": "API Tests using Newman CLI",
+  "main": "index.js",
+  "scripts": {
+    "test": "newman run collections/RateDoc.postman_collection.json -e environments/Staging.postman_environment.json",
+    "test:cli": "newman run"
+  },
+  "devDependencies": {
+    "newman": "^6.0.0"
+  }
+}
