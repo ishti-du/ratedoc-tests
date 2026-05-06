@@ -1,0 +1,398 @@
+{
+  "info": {
+    "_postman_id": "ac9f3140-dfef-452b-a0ed-560ba5a20f4f",
+    "name": "My Collection",
+    "description": "### Welcome to Postman! This is your first collection. \n\nCollections are your starting point for building and testing APIs. You can use this one to:\n\n• Group related requests\n• Test your API in real-world scenarios\n• Document and share your requests\n\nUpdate the name and overview whenever you’re ready to make it yours.\n\n[Learn more about Postman Collections.](https://learning.postman.com/docs/collections/collections-overview/)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "53653833"
+  },
+  "item": [
+    {
+      "name": "List Doctors",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// 1. Verify the HTTP status code",
+              "pm.test(\"Status code is 200 OK\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "// 2. Validate the Data Structure",
+              "pm.test(\"Response contains the items array\", function () {",
+              "    const jsonData = pm.response.json();",
+              "    ",
+              "    // Based on your JSON, the doctors are in 'items'",
+              "    pm.expect(jsonData.items).to.be.an('array');",
+              "    ",
+              "    // Optional: Verify pagination metadata is present",
+              "    pm.expect(jsonData).to.have.property('total');",
+              "    pm.expect(jsonData).to.have.property('page');",
+              "});",
+              "",
+              "// 3. Validate individual Doctor object properties",
+              "pm.test(\"Doctor objects contain required fields\", function () {",
+              "    const jsonData = pm.response.json();",
+              "    const firstDoctor = jsonData.items[0];",
+              "",
+              "    if (jsonData.items.length > 0) {",
+              "        pm.expect(firstDoctor).to.have.property('name');",
+              "        pm.expect(firstDoctor).to.have.property('specializations');",
+              "        pm.expect(firstDoctor).to.have.property('slug');",
+              "        pm.expect(firstDoctor.department).to.have.property('name');",
+              "    }",
+              "});",
+              "",
+              "// 4. Set a 'doctor_slug' variable for your team members (Keval/Abel)",
+              "pm.test(\"Capture doctor slug for next tests\", function () {",
+              "    const jsonData = pm.response.json();",
+              "    if (jsonData.items && jsonData.items.length > 0) {",
+              "        pm.environment.set(\"doctor_slug\", jsonData.items[0].slug);",
+              "    }",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "protocolProfileBehavior": {
+        "disabledSystemHeaders": {
+          "user-agent": true
+        }
+      },
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "User-Agent",
+            "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://159.89.231.16:3001/api/v1/doctors",
+          "protocol": "http",
+          "host": [
+            "159",
+            "89",
+            "231",
+            "16"
+          ],
+          "port": "3001",
+          "path": [
+            "api",
+            "v1",
+            "doctors"
+          ]
+        },
+        "description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+      },
+      "response": []
+    },
+    {
+      "name": "Create Hospital",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 201 Created\", function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "",
+              "// Only run data assertions if the response was a success",
+              "if (pm.response.code === 201) {",
+              "    pm.test(\"Response contains hospital data\", function () {",
+              "        const jsonData = pm.response.json();",
+              "        ",
+              "        // Handle cases where backend nests data under a '.data' wrapper vs top-level object",
+              "        const hospital = jsonData.data || jsonData;",
+              "        ",
+              "        // Assert that the hospital object exists",
+              "        pm.expect(hospital).to.not.be.null;",
+              "        pm.expect(hospital).to.not.be.undefined;",
+              "        ",
+              "        // Verify it contains a name property matching what you sent",
+              "        pm.expect(hospital).to.have.property('name');",
+              "        ",
+              "        // Capture the new ID and Slug dynamically to pass to subsequent endpoints",
+              "        const hospitalId = hospital.id || hospital._id;",
+              "        const hospitalSlug = hospital.slug;",
+              "        ",
+              "        if (hospitalId) {",
+              "            pm.environment.set(\"hospital_id\", hospitalId);",
+              "            console.log(\"Post-response: Captured hospital_id -> \" + hospitalId);",
+              "        }",
+              "        if (hospitalSlug) {",
+              "            pm.environment.set(\"hospital_slug\", hospitalSlug);",
+              "            console.log(\"Post-response: Captured hospital_slug -> \" + hospitalSlug);",
+              "        }",
+              "    });",
+              "}"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "// 1. Fetch a valid country ID automatically\r",
+              "pm.sendRequest({\r",
+              "    url: 'http://159.89.231.16:3001/api/v1/countries', // Adjust path if your endpoint is different\r",
+              "    method: 'GET',\r",
+              "    header: {\r",
+              "        'Authorization': `Bearer ${pm.globals.get(\"access_token\")}`\r",
+              "    }\r",
+              "}, function (err, res) {\r",
+              "    if (!err && res.code === 200) {\r",
+              "        const response = res.json();\r",
+              "        // Adjust indexing depending on if your response is a raw array or { data: [...] }\r",
+              "        const countries = response.data || response; \r",
+              "        if (countries && countries.length > 0) {\r",
+              "            // Target the identifier key (use ._id if using MongoDB, or .id for SQL/FastAPI models)\r",
+              "            const validCountryId = countries[0].id || countries[0]._id;\r",
+              "            pm.environment.set(\"country_id\", validCountryId);\r",
+              "            console.log(\"Pre-request: Set valid country_id to \" + validCountryId);\r",
+              "        }\r",
+              "    }\r",
+              "});\r",
+              "\r",
+              "// 2. Fetch a valid city ID automatically\r",
+              "pm.sendRequest({\r",
+              "    url: 'http://159.89.231.16:3001/api/v1/cities', // Adjust path if your endpoint is different\r",
+              "    method: 'GET',\r",
+              "    header: {\r",
+              "        'Authorization': `Bearer ${pm.globals.get(\"access_token\")}`\r",
+              "    }\r",
+              "}, function (err, res) {\r",
+              "    if (!err && res.code === 200) {\r",
+              "        const response = res.json();\r",
+              "        const cities = response.data || response;\r",
+              "        if (cities && cities.length > 0) {\r",
+              "            const validCityId = cities[0].id || cities[0]._id;\r",
+              "            pm.environment.set(\"city_id\", validCityId);\r",
+              "            console.log(\"Pre-request: Set valid city_id to \" + validCityId);\r",
+              "        }\r",
+              "    }\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "protocolProfileBehavior": {
+        "followAuthorizationHeader": true
+      },
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{access_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "",
+            "value": "",
+            "type": "text",
+            "disabled": true
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"name\": \"Hospital-{{$randomFirstName}}-{{$randomInt}}\",\n    \"location\": \"123 Health Ave\",\n    \"capacity\": 500,\n    \"address\": \"123 Health Avenue, Suite 100\",\n    \"city_id\": \"{{city_id}}\",\n    \"country_id\": \"{{country_id}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://159.89.231.16:3001/api/v1/hospitals",
+          "protocol": "http",
+          "host": [
+            "159",
+            "89",
+            "231",
+            "16"
+          ],
+          "port": "3001",
+          "path": [
+            "api",
+            "v1",
+            "hospitals"
+          ]
+        },
+        "description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+      },
+      "response": []
+    },
+    {
+      "name": "Auth Token",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// Parse the JSON response body",
+              "let jsonData = pm.response.json();",
+              "",
+              "// Check and set the access token (fixed the typo here)",
+              "if (jsonData.access_token) {",
+              "    pm.globals.set(\"access_token\", jsonData.access_token);",
+              "    console.log(\"Access token successfully saved to globals.\");",
+              "} else {",
+              "    console.warn(\"Access token not found in the response payload.\");",
+              "}",
+              "",
+              "// Check and set the refresh token",
+              "if (jsonData.refresh_token) {",
+              "    pm.globals.set(\"refresh_token\", jsonData.refresh_token);",
+              "    console.log(\"Refresh token successfully saved to globals.\");",
+              "}"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "protocolProfileBehavior": {
+        "followAuthorizationHeader": true
+      },
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "",
+            "value": "",
+            "type": "text",
+            "disabled": true
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"email\": \"admin@ratedoc.com\", \n    \"password\": \"DeyaJabeNa!023\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://159.89.231.16:3001/api/v1/auth/login",
+          "protocol": "http",
+          "host": [
+            "159",
+            "89",
+            "231",
+            "16"
+          ],
+          "port": "3001",
+          "path": [
+            "api",
+            "v1",
+            "auth",
+            "login"
+          ]
+        },
+        "description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+      },
+      "response": []
+    },
+    {
+      "name": "Update Department",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// 1. Verify the status code is 200 OK",
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "// 2. Verify the response contains the updated name",
+              "pm.test(\"Department name updated successfully\", function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData.name).to.eql(\"Updated Cardiology Unit\");",
+              "});",
+              "",
+              "// 3. Verify the ID matches what we updated",
+              "pm.test(\"Correct Department ID returned\", function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData.id).to.eql(10);",
+              "});",
+              "",
+              "// 4. Check that the updated_at field is recent",
+              "pm.test(\"Update timestamp is current\", function () {",
+              "    const jsonData = pm.response.json();",
+              "    // This checks if the date string includes today's date",
+              "    pm.expect(jsonData.updated_at).to.include(\"2026-04-28\");",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"name\": \"Updated Cardiology Unit\",\n    \"description\": \"Expanded facilities for heart health featuring state-of-the-art diagnostic equipment.\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://159.89.231.16:3001/api/v1/departments/10",
+          "protocol": "http",
+          "host": [
+            "159",
+            "89",
+            "231",
+            "16"
+          ],
+          "port": "3001",
+          "path": [
+            "api",
+            "v1",
+            "departments",
+            "10"
+          ]
+        },
+        "description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+      },
+      "response": []
+    }
+  ]
+}
