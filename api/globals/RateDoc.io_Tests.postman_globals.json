@@ -1,0 +1,33 @@
+{
+	"id": "1534434a-bf9a-4b8e-8b3d-cabf969ef377",
+	"values": [
+		{
+			"key": "base_url",
+			"value": "http://159.89.231.16:3000",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "username",
+			"value": "admin@ratedoc.com",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "password",
+			"value": "DeyaJabeNa!023",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "cityId",
+			"value": "",
+			"type": "default",
+			"enabled": true
+		}
+	],
+	"name": "RateDoc.io Tests Globals",
+	"_postman_variable_scope": "globals",
+	"_postman_exported_at": "2026-05-06T07:10:17.076Z",
+	"_postman_exported_using": "Postman/12.9.3-260506-0237"
+}
