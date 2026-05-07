@@ -1,0 +1,219 @@
+{
+  "info": {
+    "_postman_id": "34150bef-ceb9-44a9-82ca-9ff508e9c75d",
+    "name": "Yony Rober - RateDoctor API Tests",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "53719157"
+  },
+  "item": [
+    {
+      "name": "baseURL = https://ratedoctor.io",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "baseURL = https://ratedoctor.io",
+          "protocol": "baseURL = https",
+          "host": [
+            "ratedoctor",
+            "io"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create Doctor",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is valid\", function () {",
+              "    pm.expect([200, 201, 400, 401, 403, 422]).to.include(pm.response.code);",
+              "});",
+              "",
+              "pm.test(\"Response exists\", function () {",
+              "    pm.expect(pm.response.text().length).to.be.above(0);",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Dr. Yony API Test\",\n  \"slug\": \"dr-yony-api-test\",\n  \"email\": \"yony.api.test@example.com\",\n  \"phone\": \"01700000000\",\n  \"degree\": \"MBBS\",\n  \"designation\": \"Test Doctor\",\n  \"department_id\": 1,\n  \"hospital_id\": 1,\n  \"bio\": \"Created by Yony for testing\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://ratedoctor.io/api/v1/doctors",
+          "protocol": "https",
+          "host": [
+            "ratedoctor",
+            "io"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "doctors"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Hospital Doctors",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is valid\", function () {",
+              "    pm.expect([200, 403, 404]).to.include(pm.response.code);",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "https://ratedoctor.io/api/v1/hospitals/square-hospital-ltd/doctors",
+          "protocol": "https",
+          "host": [
+            "ratedoctor",
+            "io"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "hospitals",
+            "square-hospital-ltd",
+            "doctors"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create Department",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is valid\", function () {",
+              "    pm.expect([200, 201, 400, 401, 403, 422]).to.include(pm.response.code);",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Yony Test Department\",\n  \"slug\": \"yony-test-department\",\n  \"description\": \"Testing department creation\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://ratedoctor.io/api/v1/departments",
+          "protocol": "https",
+          "host": [
+            "ratedoctor",
+            "io"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "departments"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "baseURL = https://ratedoctor.io",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "baseURL = https://ratedoctor.io",
+          "protocol": "baseURL = https",
+          "host": [
+            "ratedoctor",
+            "io"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "hospitalSlug",
+      "value": ""
+    }
+  ]
+}
