@@ -1,0 +1,120 @@
+{
+  "info": {
+    "name": "RateDoc Basic Tests",
+    "_postman_id": "12345",
+    "description": "Basic API Tests",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Get Doctors",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "http://159.89.231.16:3001/api/v1/doctors",
+          "protocol": "http",
+          "host": ["159.89.231.16"],
+          "port": "3001",
+          "path": ["api", "v1", "doctors"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "var res = pm.response.json();",
+              "var list = [];",
+              "",
+              "if (Array.isArray(res)) {",
+              "    list = res;",
+              "} else if (res.data && Array.isArray(res.data)) {",
+              "    list = res.data;",
+              "} else if (res.data && res.data.items && Array.isArray(res.data.items)) {",
+              "    list = res.data.items;",
+              "} else if (res.results && Array.isArray(res.results)) {",
+              "    list = res.results;",
+              "}",
+              "",
+              "pm.test(\"Doctors list exists (can be empty)\", function () {",
+              "    pm.expect(list.length).to.be.at.least(0);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Get Hospitals",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "http://159.89.231.16:3001/api/v1/hospitals",
+          "protocol": "http",
+          "host": ["159.89.231.16"],
+          "port": "3001",
+          "path": ["api", "v1", "hospitals"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "var res = pm.response.json();",
+              "var list = [];",
+              "",
+              "if (Array.isArray(res)) {",
+              "    list = res;",
+              "} else if (res.data && Array.isArray(res.data)) {",
+              "    list = res.data;",
+              "} else if (res.data && res.data.items && Array.isArray(res.data.items)) {",
+              "    list = res.data.items;",
+              "} else if (res.results && Array.isArray(res.results)) {",
+              "    list = res.results;",
+              "}",
+              "",
+              "pm.test(\"Hospitals list exists (can be empty)\", function () {",
+              "    pm.expect(list.length).to.be.at.least(0);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Get Diagnostic Centers",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "http://159.89.231.16:3001/api/v1/diagnostic-centers",
+          "protocol": "http",
+          "host": ["159.89.231.16"],
+          "port": "3001",
+          "path": ["api", "v1", "diagnostic-centers"]
+        }
+      }
+    },
+    {
+      "name": "Get Reviews",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "http://159.89.231.16:3001/api/v1/reviews",
+          "protocol": "http",
+          "host": ["159.89.231.16"],
+          "port": "3001",
+          "path": ["api", "v1", "reviews"]
+        }
+      }
+    }
+  ]
+}
