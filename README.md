@@ -101,3 +101,18 @@ newman run collections/Gabriel_Silva_RateDoc_Admin.postman_collection.json \
 ```
 
 Expected result: **20/20 assertions passed**
+
+### Matthew Kaplan's Tests
+
+1. Install Node.js (LTS).
+2. Install dependencies:
+   ```bash
+   cd api
+   npm install
+   ```
+Run Matthew Kaplan's collection manually:
+   ```bash
+   newman run collections/<Matthew_Kaplan_RateDoctor.postman_collection>.json -e environments/Matthew_Kaplan_Staging.postman_environment.json
+   ```
+Expected result: **28/28 assertions passed**
+
