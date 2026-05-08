@@ -1,0 +1,348 @@
+{
+  "info": {
+    "name": "RateDoc Tests - Abel",
+    "description": "my api tests for team 3 endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "login first",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// make sure login works and save the token",
+              "pm.test('login should return 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "var res = pm.response.json();",
+              "pm.environment.set('access_token', res.access_token);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{admin_email}}\",\n  \"password\": \"{{admin_password}}\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/auth/login",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "auth", "login"]
+        }
+      }
+    },
+    {
+      "name": "update doctor - should work",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('returns the doctor object', function () {",
+              "    var json = pm.response.json();",
+              "    pm.expect(json).to.have.property('slug');",
+              "    pm.expect(json.name).to.include('Rakibul');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{access_token}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Dr. Mohammad Rakibul Hasan Chowdhury\",\n  \"specializations\": \"Dental & Oral Specialist\",\n  \"qualifications\": \"BDS (CU), PGT (Prosthodontics)\",\n  \"department_id\": 1,\n  \"city_id\": 1,\n  \"country_id\": 1,\n  \"gender\": \"male\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/doctors/{{doctor_slug}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "doctors", "{{doctor_slug}}"]
+        }
+      }
+    },
+    {
+      "name": "update doctor - no token (should fail)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// shouldnt work without being logged in",
+              "pm.test('should get 401 if not logged in', function () {",
+              "    pm.response.to.have.status(401);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Dr. Test\",\n  \"specializations\": \"General\",\n  \"qualifications\": \"MBBS\",\n  \"department_id\": 1,\n  \"city_id\": 1,\n  \"country_id\": 1\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/doctors/{{doctor_slug}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "doctors", "{{doctor_slug}}"]
+        }
+      }
+    },
+    {
+      "name": "update doctor - bad slug",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('404 if doctor doesnt exist', function () {",
+              "    pm.response.to.have.status(404);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{access_token}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"nobody\",\n  \"specializations\": \"General\",\n  \"qualifications\": \"MBBS\",\n  \"department_id\": 1,\n  \"city_id\": 1,\n  \"country_id\": 1\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/doctors/fake-doctor-slug-12345",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "doctors", "fake-doctor-slug-12345"]
+        }
+      }
+    },
+    {
+      "name": "update hospital - should work",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('hospital name matches', function () {",
+              "    var json = pm.response.json();",
+              "    pm.expect(json.name).to.eql('Best General Hospital');",
+              "});",
+              "",
+              "pm.test('has address', function () {",
+              "    var json = pm.response.json();",
+              "    pm.expect(json).to.have.property('address');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{access_token}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Best General Hospital\",\n  \"address\": \"Islampur, Majortila, Sylhet\",\n  \"city_id\": 1,\n  \"country_id\": 1\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/hospitals/{{hospital_slug}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "hospitals", "{{hospital_slug}}"]
+        }
+      }
+    },
+    {
+      "name": "update hospital - no token",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('401 without token', function () {",
+              "    pm.response.to.have.status(401);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Best General Hospital\",\n  \"address\": \"Islampur, Majortila, Sylhet\",\n  \"city_id\": 1,\n  \"country_id\": 1\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/hospitals/{{hospital_slug}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "hospitals", "{{hospital_slug}}"]
+        }
+      }
+    },
+    {
+      "name": "update hospital - wrong slug",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('404 for wrong slug', function () {",
+              "    pm.response.to.have.status(404);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{access_token}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"fake hospital\",\n  \"address\": \"nowhere\",\n  \"city_id\": 1,\n  \"country_id\": 1\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/hospitals/fake-hospital-slug-99999",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "hospitals", "fake-hospital-slug-99999"]
+        }
+      }
+    },
+    {
+      "name": "reject hospital - should work",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// admin rejects a hospital, status should change to rejected",
+              "pm.test('status 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('hospital status is now rejected', function () {",
+              "    var json = pm.response.json();",
+              "    pm.expect(json.status).to.eql('rejected');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{access_token}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": ""
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/hospitals/{{hospital_slug}}/reject",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "hospitals", "{{hospital_slug}}", "reject"]
+        }
+      }
+    },
+    {
+      "name": "reject hospital - no token",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('should be 401', function () {",
+              "    pm.response.to.have.status(401);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": ""
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/hospitals/{{hospital_slug}}/reject",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "hospitals", "{{hospital_slug}}", "reject"]
+        }
+      }
+    },
+    {
+      "name": "reject hospital - bad slug",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('404 if hospital not found', function () {",
+              "    pm.response.to.have.status(404);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{access_token}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": ""
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/hospitals/fake-hospital-slug-99999/reject",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "hospitals", "fake-hospital-slug-99999", "reject"]
+        }
+      }
+    }
+  ]
+}
