@@ -148,7 +148,7 @@ npm test
 or:
 
 ```bash
-newman run Anatoly_Barabanov_Team3_API_Tests.json
+newman run Anatoly_Barabanov_team3_api_tests.json
 ```
 
 ---
