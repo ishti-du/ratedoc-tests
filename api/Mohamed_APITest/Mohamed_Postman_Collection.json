@@ -1,0 +1,369 @@
+{
+  "info": {
+    "_postman_id": "76c3049e-03fa-4d19-84c6-e498bd996565",
+    "name": "RateDoctor.io API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "53646682"
+  },
+  "item": [
+    {
+      "name": "New Request",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Login request responded\", function () {\r",
+              "    pm.expect([200, 404]).to.include(pm.response.code);\r",
+              "});\r",
+              "\r",
+              "if (pm.response.code === 200) {\r",
+              "    let json = pm.response.json();\r",
+              "\r",
+              "    pm.test(\"Access token exists\", function () {\r",
+              "        pm.expect(json.access_token).to.exist;\r",
+              "    });\r",
+              "\r",
+              "    pm.environment.set(\"token\", json.access_token);\r",
+              "}\r",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"email\": \"admin@ratedoc.com\", \"password\": \"DeyaJabeNa!023\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_link}}/api/v1/auth/login",
+          "host": [
+            "{{base_link}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "auth",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "New Request",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Request successful\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_link}}/api/v1/admin/reviews",
+          "host": [
+            "{{base_link}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "admin",
+            "reviews"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "New Request",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"PUT request successful\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "if (pm.response.code === 200) {\r",
+              "    const jsonData = pm.response.json();\r",
+              "    pm.environment.set(\"id\", jsonData.id);\r",
+              "} else {\r",
+              "    console.log(\"Skipping JSON parse because response was:\", pm.response.code);\r",
+              "}\r",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "PUT",
+        "header": [],
+        "url": {
+          "raw": "{{base_link}}/api/v1/admin/reviews/14/pending",
+          "host": [
+            "{{base_link}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "admin",
+            "reviews",
+            "14",
+            "pending"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "New Request",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"PUT request successful\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "if (pm.response.code === 200) {\r",
+              "    const jsonData = pm.response.json();\r",
+              "    pm.environment.set(\"id\", jsonData.id);\r",
+              "} else {\r",
+              "    console.log(\"Skipping JSON parse because response was:\", pm.response.code);\r",
+              "}\r",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "PUT",
+        "header": [],
+        "url": {
+          "raw": "{{base_link}}/api/v1/admin/providers/8186/reject?provider_type=doctor",
+          "host": [
+            "{{base_link}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "admin",
+            "providers",
+            "8186",
+            "reject"
+          ],
+          "query": [
+            {
+              "key": "provider_type",
+              "value": "doctor"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "New Request",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Request successful\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_link}}/api/v1/admin/reviews/pending",
+          "host": [
+            "{{base_link}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "admin",
+            "reviews",
+            "pending"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "New Request",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "\r",
+              "if (pm.response.code === 200) {\r",
+              "    const jsonData = pm.response.json();\r",
+              "    pm.environment.set(\"id\", jsonData.id);\r",
+              "} else {\r",
+              "    console.log(\"Skipping JSON parse because response was:\", pm.response.code);\r",
+              "}\r",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{base_link}}/api/v1/admin/reviews/14",
+          "host": [
+            "{{base_link}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "admin",
+            "reviews",
+            "14"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_link",
+      "value": "http://159.89.231.16:3001"
+    }
+  ]
+}
