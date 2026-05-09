@@ -1,46 +1,120 @@
-# RateDoc Tests
+# 2. Doctor Review Required Fields Validation
 
-A repository for testing the RateDoc application (http://159.89.231.16:3000/).
+## File
 
-For Swagger UI for API documents, visit: http://159.89.231.16:3001/docs
+```text
+tests/test_review_required_fields.py
+```
 
-## Project Structure
-- `e2e/`: End-to-end UI tests using Playwright (Python).
-- `api/`: API tests using Postman/Newman (Node.js).
+---
 
-## UI Testing (Playwright Python)
-### Setup
-1. Create and activate a virtual environment:
-   ```bash
-   cd e2e
-   python3 -m venv venv
-   source venv/bin/activate
-   ```
-2. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   playwright install
-   ```
-### Execution
-Run tests using pytest:
+## Purpose
+
+Verify validation for required review fields.
+
+---
+
+## Steps Tested
+
+1. Login as regular user  
+2. Open doctor profile page  
+3. Locate review form  
+4. Leave Visit Date empty  
+5. Leave Overall Rating empty  
+6. Submit review  
+
+---
+
+## Expected Result
+
+- Submission is blocked  
+- User remains on doctor page  
+- Validation behavior appears  
+
+---
+
+## Technologies Used
+
+- Playwright  
+- Python  
+- Pytest  
+
+---
+
+# Setup
+
+Navigate to the `e2e` folder:
+
+```bash
+cd e2e
+```
+
+---
+
+# Create Virtual Environment
+
+## Windows
+
+```bash
+python -m venv venv
+venv\Scripts\activate
+```
+
+## Mac/Linux
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+
+---
+
+# Install Dependencies
+
+```bash
+pip install -r requirements.txt
+playwright install
+```
+
+---
+
+# Running Tests
+
+## Run All Tests
+
 ```bash
 pytest tests/ --base-url http://159.89.231.16:3000/
 ```
 
-## API Testing (Newman CLI)
-### Setup
-1. Install Node.js (LTS).
-2. Install dependencies:
-   ```bash
-   cd api
-   npm install
-   ```
-### Execution
-Run tests using Newman:
+---
+
+## Run Theme Toggle Test
+
 ```bash
-npm test
+pytest tests/test_theme_button.py --base-url http://159.89.231.16:3000/ -v
 ```
-Or manually:
+
+---
+
+## Run Review Validation Test
+
 ```bash
-newman run collections/<collection_file>.json -e environments/<environment_file>.json
+pytest tests/test_review_required_fields.py --base-url http://159.89.231.16:3000/ -v
 ```
+
+---
+
+# Run Tests in Visible Browser
+
+```bash
+pytest tests/test_review_required_fields.py --base-url http://159.89.231.16:3000/ --headed -v
+```
+
+---
+
+# Notes
+
+- Playwright uses Chromium browser automation  
+- Tests validate real frontend workflows  
+- UI automation interacts with live pages and forms  
+- Review validation test uses a regular user account for realistic testing  
